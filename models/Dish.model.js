@@ -1,98 +1,125 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const dishSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: true
+    required: true,
   },
   ingredients: {
     type: [String],
-    required: true
+    required: true,
   },
   price: {
     type: Number,
-    required: true
+    required: true,
   },
   cookingTime: {
     type: Number,
-    required: true
+    required: true,
   },
   difficulty: {
     type: String,
     required: true,
-    enum: ['easy', 'medium', 'hard']
+    enum: ["easy", "medium", "hard"],
   },
   categories: {
     origin: {
-      type: String,
+      type: [String],
       required: true,
       enum: [
-        'Italian', 'Mexican', 'Indian', 'Turkish',
-        'Chinese', 'Japanese', 'French', 'American', 'MiddleEastern',
-        'Thai', 'Spanish', 'Greek', 'Korean', 'Vietnamese'
-      ]
+        "Italian",
+        "Mexican",
+        "Indian",
+        "Turkish",
+        "Chinese",
+        "Japanese",
+        "French",
+        "American",
+        "MiddleEastern",
+        "Thai",
+        "Spanish",
+        "Greek",
+        "Korean",
+        "Vietnamese",
+      ],
     },
     diet: {
-      type: String,
+      type: [String],
       required: true,
       enum: [
-        'Vegan', 'Vegetarian', 'Animal-protein', 'Pescatarian', 'Low-calories',
-        'High-protein', 'Keto', 'Paleo', 'Gluten-free', 'Dairy-free'
-      ]
+        "Vegan",
+        "Vegetarian",
+        "Animal-protein",
+        "Pescatarian",
+        "Low-calories",
+        "High-protein",
+        "Keto",
+        "Paleo",
+        "Gluten-free",
+        "Dairy-free",
+      ],
     },
     cookingTime: {
       type: String,
       required: true,
-      enum: ['Fast', 'Normal', 'Slow']
+      enum: ["Fast", "Normal", "Slow"],
     },
     isHot: {
       type: Boolean,
-      required: true
-    }
+      required: true,
+    },
   },
   allergens: {
     type: [String],
     required: true,
     enum: [
-      'Eggs', 'Dairy', 'Wheat', 'Soy', 'Peanuts', 'Tree nuts', 'Fish', 'Shellfish', 'Sesame'
-    ]
+      "Eggs",
+      "Dairy",
+      "Wheat",
+      "Soy",
+      "Peanuts",
+      "Tree nuts",
+      "Fish",
+      "Shellfish",
+      "Sesame",
+      "None",
+    ],
   },
   steps: {
     type: [String],
-    required: true
+    required: true,
   },
   rating: {
     type: Number,
-    required: true
+    required: true,
   },
   nutritionalValuePerServing: {
     calories: {
       type: Number,
-      required: true
+      required: true,
     },
     fat: {
       type: Number,
-      required: true
+      required: true,
     },
     protein: {
       type: Number,
-      required: true
+      required: true,
     },
     carbohydrates: {
       type: Number,
-      required: true
+      required: true,
     },
     carbsOfWhichSugars: {
       type: Number,
-      required: true
     },
     fiber: {
       type: Number,
-      required: true
-    }
-  }
+      required: true,
+    },
+  },
 });
 
-const Dish = mongoose.model('Dish', dishSchema);
+const Dish = mongoose.model("Dish", dishSchema);
 
 module.exports = Dish;
