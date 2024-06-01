@@ -9,8 +9,12 @@ const dishSchema = new mongoose.Schema({
     type: [String],
     required: true
   },
-  time_of_cooking: {
-    type: String,
+  price: {
+    type: Number,
+    required: true
+  },
+  cookingTime: {
+    type: Number,
     required: true
   },
   difficulty: {
@@ -22,12 +26,19 @@ const dishSchema = new mongoose.Schema({
     origin: {
       type: String,
       required: true,
-      enum: ['Italian', 'SoutheastAsian', 'Mediterranean', 'Mexican']
+      enum: [
+        'Italian', 'Mexican', 'Indian', 'Turkish',
+        'Chinese', 'Japanese', 'French', 'American', 'MiddleEastern',
+        'Thai', 'Spanish', 'Greek', 'Korean', 'Vietnamese'
+      ]
     },
     diet: {
       type: String,
       required: true,
-      enum: ['Vegan', 'Non-vegetarian', 'Carnivore']
+      enum: [
+        'Vegan', 'Vegetarian', 'Animal-protein', 'Pescatarian', 'Low-calories',
+        'High-protein', 'Keto', 'Paleo', 'Gluten-free', 'Dairy-free'
+      ]
     },
     cookingTime: {
       type: String,
@@ -41,11 +52,44 @@ const dishSchema = new mongoose.Schema({
   },
   allergens: {
     type: [String],
-    required: true
+    required: true,
+    enum: [
+      'Eggs', 'Dairy', 'Wheat', 'Soy', 'Peanuts', 'Tree nuts', 'Fish', 'Shellfish', 'Sesame'
+    ]
   },
   steps: {
     type: [String],
     required: true
+  },
+  rating: {
+    type: Number,
+    required: true
+  },
+  nutritionalValuePerServing: {
+    calories: {
+      type: Number,
+      required: true
+    },
+    fat: {
+      type: Number,
+      required: true
+    },
+    protein: {
+      type: Number,
+      required: true
+    },
+    carbohydrates: {
+      type: Number,
+      required: true
+    },
+    carbsOfWhichSugars: {
+      type: Number,
+      required: true
+    },
+    fiber: {
+      type: Number,
+      required: true
+    }
   }
 });
 
