@@ -3,6 +3,8 @@ const router = express.Router();
 
 const { isAuthenticated } = require("./../middleware/jwt.middleware");
 
+const { validateDish } = require("./../error-handling/dishes-errors");
+
 const roleValidation = require("../middleware/roleValidation");
 
 const Dish = require("../models/Dish.model");
@@ -23,7 +25,7 @@ router.get("/:id", (req, res, next) => {
     .catch((err) => next(err));
 });
 
-router.post("/", isAuthenticated, roleValidation["admin"], (req, res, next) => {
+router.post("/", validateDish, (req, res, next) => {
   Dish.create(req.body)
     .then((newDish) => {
       res.json(newDish);
