@@ -20,7 +20,11 @@ const mealPlanSchema = new Schema({
     required: true,
   },
   category: { type: Schema.Types.ObjectId, ref: "Category", required: true },
+
+  dishes: [{ type: Schema.Types.ObjectId, ref: "Dish", required: true }],
 });
+
+
 
 const MealPlan = model("MealPlan", mealPlanSchema);
 module.exports = MealPlan;

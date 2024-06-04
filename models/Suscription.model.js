@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const { Schema, model } = mongoose;
 
-const purchaseSchema = new Schema({
+const suscriptionSchema = new Schema({
     shippingAdress: {
         address: {
             type: String,
@@ -30,7 +30,7 @@ const purchaseSchema = new Schema({
         },
 
     },
-    mealPlan: { type: Schema.Types.ObjectId, ref: "MealPlan", required: true },
+    weeklyOrder: { type: Schema.Types.ObjectId, ref: "WeeklyOrder", required: true },
 
     timestamps: true,
 
@@ -55,6 +55,6 @@ const purchaseSchema = new Schema({
 
 })
 
-const Purchase = model("Purchase", purchaseSchema);
+const Suscription = model("Suscription", suscriptionSchema);
 
-module.exports = Purchase;
+module.exports = Suscription;
