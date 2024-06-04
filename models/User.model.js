@@ -22,32 +22,8 @@ const userSchema = new Schema(
       type: String,
       required: [true, "LastName is required."],
     },
-    contactInformation: {
-      address: {
-        type: String,
-        required: [true, "Address is required."],
-      },
-      city: {
-        type: String,
-        required: [true, "City is required."],
-      },
-      region: {
-        type: String,
-        required: [true, "Region is required."],
-      },
-      zipCode: {
-        type: String,
-        required: [true, "ZipCode is required."],
-      },
-      country: {
-        type: String,
-        required: [true, "Country is required."],
-      },
-    },
-    phone: {
-      type: String,
-      required: [true, "Phone number is required."],
-    },
+    
+   
     role: {
       type: String,
       required: [true, "Role is required"],
