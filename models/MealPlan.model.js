@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const{ Schema, model } = mongoose
+const { Schema, model } = mongoose;
 
 const mealPlanSchema = new Schema({
   numberOfPeople: {
@@ -9,7 +9,7 @@ const mealPlanSchema = new Schema({
     required: true,
     default: 2,
   },
-  numberOfServings: {
+  dishesPerWeek: {
     type: Number,
     enum: [2, 3, 4, 5],
     required: true,
@@ -19,6 +19,7 @@ const mealPlanSchema = new Schema({
     type: Number,
     required: true,
   },
+  category: { type: Schema.Types.ObjectId, ref: "Category", required: true },
 });
 
 const MealPlan = model("MealPlan", mealPlanSchema);

@@ -1,6 +1,8 @@
 const mongoose = require("mongoose");
 
-const dishSchema = new mongoose.Schema({
+const { Schema, model } = mongoose;
+
+const dishSchema = new Schema({
   name: {
     type: String,
     required: true,
@@ -22,68 +24,10 @@ const dishSchema = new mongoose.Schema({
     required: true,
     enum: ["easy", "medium", "hard"],
   },
-  categories: {
-    origin: {
-      type: [String],
-      required: true,
-      enum: [
-        "Italian",
-        "Mexican",
-        "Indian",
-        "Turkish",
-        "Chinese",
-        "Japanese",
-        "French",
-        "American",
-        "MiddleEastern",
-        "Thai",
-        "Spanish",
-        "Greek",
-        "Korean",
-        "Vietnamese",
-      ],
-    },
-    diet: {
-      type: [String],
-      required: true,
-      enum: [
-        "Vegan",
-        "Vegetarian",
-        "Animal-protein",
-        "Pescatarian",
-        "Low-calories",
-        "High-protein",
-        "Keto",
-        "Paleo",
-        "Gluten-free",
-        "Dairy-free",
-      ],
-    },
-    cookingTime: {
-      type: String,
-      required: true,
-      enum: ["Fast", "Normal", "Slow"],
-    },
-    isHot: {
-      type: Boolean,
-      required: true,
-    },
-  },
-  allergens: {
-    type: [String],
+  category: {
+    type: Schema.Types.ObjectId,
+    ref: "Category",
     required: true,
-    enum: [
-      "Eggs",
-      "Dairy",
-      "Wheat",
-      "Soy",
-      "Peanuts",
-      "Tree nuts",
-      "Fish",
-      "Shellfish",
-      "Sesame",
-      "None",
-    ],
   },
   steps: {
     type: [String],
@@ -120,6 +64,6 @@ const dishSchema = new mongoose.Schema({
   },
 });
 
-const Dish = mongoose.model("Dish", dishSchema);
+const Dish = model("Dish", dishSchema);
 
 module.exports = Dish;
