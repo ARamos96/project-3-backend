@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const purchaseSchema = new mongoose.Schema({
+const mealPlanSchema = new mongoose.Schema({
   numberOfPeople: {
     type: Number,
     enum: [1, 2, 3, 4],
@@ -9,7 +9,8 @@ const purchaseSchema = new mongoose.Schema({
     type: Number,
     enum: [2, 3, 4, 5],
   },
+
 });
 
-const Purchase = mongoose.model("Purchase", purchaseSchema);
-module.exports = Purchase;
+const MealPlan = mongoose.model("MealPlan", mealPlanSchema);
+module.exports = MealPlan;
