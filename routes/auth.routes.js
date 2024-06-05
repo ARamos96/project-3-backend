@@ -128,4 +128,20 @@ router.get("/verify", isAuthenticated, (req, res, next) => {
   res.status(200).json(req.payload);
 });
 
+//Delete /auth/user/:userId - Delete an existing user
+
+router.delete("/user/:userId", isAuthenticated, (req, res, next) => {
+  const {userId} = req.params;
+  User.findByIdAndDelete(userId)
+    .then((deletedUser) => {
+      if(!deletedUser){
+        res.status(404).json({message: "User not found"})
+        return;
+      }
+      res.status(200).json({message: "User deleted successfully"});
+    })
+    .catch((err) => next(err));
+
+})
+
 module.exports = router;
