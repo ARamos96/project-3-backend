@@ -1,5 +1,8 @@
 const { Schema, model } = require("mongoose");
 
+
+const { categoriesSchema } = require("./Categories.model");
+
 const userSchema = new Schema(
   {
     email: {
@@ -22,15 +25,16 @@ const userSchema = new Schema(
       type: String,
       required: [true, "LastName is required."],
     },
-    
-   
     role: {
       type: String,
       required: [true, "Role is required"],
       default: "user",
-      enum: ["user", "admin"] 
-    }
-    
+      enum: ["user", "admin"],
+    },
+    categories: {
+      type: categoriesSchema,
+      required: false,
+    },
   },
   {
     // this second object adds extra properties: `createdAt` and `updatedAt`
