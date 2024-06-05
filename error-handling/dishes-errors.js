@@ -62,7 +62,6 @@ const validateDish = (req, res, next) => {
     "cookingTime",
     "difficulty",
     "categories",
-    "allergens",
     "steps",
     "rating",
     "nutritionalValuePerServing",
@@ -71,13 +70,9 @@ const validateDish = (req, res, next) => {
   const missingFields = requiredFields.filter((field) => !req.body[field]);
 
   if (missingFields.length > 0) {
-    return res
-      .status(400)
-      .json({
-        message: `Dish is missing required fields: ${missingFields.join(
-          ", "
-        )}.`,
-      });
+    return res.status(400).json({
+      message: `Dish is missing required fields: ${missingFields.join(", ")}.`,
+    });
   }
 
   if (!Array.isArray(ingredients) || ingredients.length === 0) {
@@ -132,8 +127,8 @@ const validateDish = (req, res, next) => {
   }
 
   if (
-    !Array.isArray(allergens) ||
-    allergens.some((allergen) => !allergenOptions.includes(allergen))
+    !Array.isArray(categories.allergens) ||
+    categories.allergens.some((allergen) => !allergenOptions.includes(allergen))
   ) {
     return res.status(400).json({ message: "Dish allergens are not valid." });
   }

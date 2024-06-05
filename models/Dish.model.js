@@ -1,6 +1,14 @@
 const mongoose = require("mongoose");
 
+<<<<<<< Updated upstream
 const dishSchema = new mongoose.Schema({
+=======
+const { Schema, model } = mongoose;
+
+const { categoriesSchema } = require("./Categories.model");
+
+const dishSchema = new Schema({
+>>>>>>> Stashed changes
   name: {
     type: String,
     required: true,
@@ -23,6 +31,7 @@ const dishSchema = new mongoose.Schema({
     enum: ["easy", "medium", "hard"],
   },
   categories: {
+<<<<<<< Updated upstream
     origin: {
       type: [String],
       required: true,
@@ -71,6 +80,9 @@ const dishSchema = new mongoose.Schema({
   },
   allergens: {
     type: [String],
+=======
+    type: categoriesSchema,
+>>>>>>> Stashed changes
     required: true,
     enum: [
       "Eggs",
