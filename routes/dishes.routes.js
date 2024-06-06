@@ -36,15 +36,20 @@ router.post("/", validateDish, (req, res, next) => {
 });
 
 // PUT (replace) a dish by ID
-router.put("/:id", (req, res, next) => {
-  const { id } = req.params;
+router.put(
+  "/:id",
+  isAuthenticated,
+  roleValidation(["admin"]),
+  (req, res, next) => {
+    const { id } = req.params;
 
-  Dish.findByIdAndUpdate(id, req.body, { new: true })
-    .then((updatedDish) => {
-      res.status(200).json(updatedDish);
-    })
-    .catch((err) => next(err));
-});
+    Dish.findByIdAndUpdate(id, req.body, { new: true })
+      .then((updatedDish) => {
+        res.status(200).json(updatedDish);
+      })
+      .catch((err) => next(err));
+  }
+);
 
 // PATCH (update) a dish by ID
 router.patch(
@@ -63,14 +68,19 @@ router.patch(
 );
 
 // DELETE a dish by ID
-router.delete("/:id", (req, res, next) => {
-  const { id } = req.params;
+router.delete(
+  "/:id",
+  isAuthenticated,
+  roleValidation(["admin"]),
+  (req, res, next) => {
+    const { id } = req.params;
 
-  Dish.findByIdAndDelete(id)
-    .then((deletedDish) => {
-      res.status(200).json(deletedDish);
-    })
-    .catch((err) => next(err));
-});
+    Dish.findByIdAndDelete(id)
+      .then((deletedDish) => {
+        res.status(200).json(deletedDish);
+      })
+      .catch((err) => next(err));
+  }
+);
 
 module.exports = router;

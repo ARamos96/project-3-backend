@@ -73,10 +73,10 @@ const dishSchema = new Schema({
       type: Boolean,
       required: true,
     },
-  },
-  allergens: {
-    type: [String],
-    required: true,
+    allergens: {
+      type: [String],
+      required: true,
+    },
   },
   steps: {
     type: [String],
