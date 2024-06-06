@@ -3,7 +3,10 @@ const router = express.Router();
 
 const { validateDish } = require("./../error-handling/dishes-errors");
 
+const roleValidation = require("../middleware/roleValidation");
+
 const Dish = require("../models/Dish.model");
+const { isAuthenticated } = require("../middleware/jwt.middleware");
 
 // GET all dishes
 router.get("/", (req, res, next) => {
@@ -33,36 +36,51 @@ router.post("/", validateDish, (req, res, next) => {
 });
 
 // PUT (replace) a dish by ID
-router.put("/:id", (req, res, next) => {
-  const { id } = req.params;
+router.put(
+  "/:id",
+  isAuthenticated,
+  roleValidation(["admin"]),
+  (req, res, next) => {
+    const { id } = req.params;
 
-  Dish.findByIdAndUpdate(id, req.body, { new: true })
-    .then((updatedDish) => {
-      res.status(200).json(updatedDish);
-    })
-    .catch((err) => next(err));
-});
+    Dish.findByIdAndUpdate(id, req.body, { new: true })
+      .then((updatedDish) => {
+        res.status(200).json(updatedDish);
+      })
+      .catch((err) => next(err));
+  }
+);
 
 // PATCH (update) a dish by ID
-router.patch("/:id", (req, res, next) => {
-  const { id } = req.params;
+router.patch(
+  "/:id",
+  isAuthenticated,
+  roleValidation(["admin"]),
+  (req, res, next) => {
+    const { id } = req.params;
 
-  Dish.findByIdAndUpdate(id, req.body, { new: true, runValidators: true })
-    .then((updatedDish) => {
-      res.status(200).json(updatedDish);
-    })
-    .catch((err) => next(err));
-});
+    Dish.findByIdAndUpdate(id, req.body, { new: true, runValidators: true })
+      .then((updatedDish) => {
+        res.status(200).json(updatedDish);
+      })
+      .catch((err) => next(err));
+  }
+);
 
 // DELETE a dish by ID
-router.delete("/:id", (req, res, next) => {
-  const { id } = req.params;
+router.delete(
+  "/:id",
+  isAuthenticated,
+  roleValidation(["admin"]),
+  (req, res, next) => {
+    const { id } = req.params;
 
-  Dish.findByIdAndDelete(id)
-    .then((deletedDish) => {
-      res.status(200).json(deletedDish);
-    })
-    .catch((err) => next(err));
-});
+    Dish.findByIdAndDelete(id)
+      .then((deletedDish) => {
+        res.status(200).json(deletedDish);
+      })
+      .catch((err) => next(err));
+  }
+);
 
 module.exports = router;

@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const { Schema, model } = mongoose;
 
-const suscriptionSchema = new Schema({
+const subscriptionSchema = new Schema({
     shippingAdress: {
         address: {
             type: String,
@@ -55,6 +55,6 @@ const suscriptionSchema = new Schema({
 
 })
 
-const Suscription = model("Suscription", suscriptionSchema);
+const Subscription = model("Subscription", subscriptionSchema);
 
-module.exports = Suscription;
+module.exports = Subscription;
