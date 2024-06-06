@@ -35,7 +35,7 @@ const subscriptionSchema = new Schema({
   //weeklyOrder: { type: Schema.Types.ObjectId, ref: "WeeklyOrder", required: true },
 
   mealPlan: { Type: Schema.Types.ObjectId, ref: "MealPlan", required: true },
-  
+
   user: { Type: Schema.Types.ObjectId, ref: "User", required: true },
 
   timestamps: true,
