@@ -2,58 +2,63 @@ const mongoose = require("mongoose");
 
 const { Schema, model } = mongoose;
 
+const { PaymentSchema } = require("./PaymentMethod.model");
+
 const subscriptionSchema = new Schema({
-    shippingAdress: {
-        address: {
-            type: String,
-            required: [true, "Address is required."],
-        },
-        city: {
-            type: String,
-            required: [true, "City is required."],
-        },
-        region: {
-            type: String,
-            required: [true, "Region is required."],
-        },
-        zipCode: {
-            type: String,
-            required: [true, "ZipCode is required."],
-        },
-        country: {
-            type: String,
-            required: [true, "Country is required."],
-        },
-        phone: {
-            type: String,
-            required: [true, "Phone number is required."],
-        },
-
+  shippingAdress: {
+    address: {
+      type: String,
+      required: [true, "Address is required."],
     },
-    weeklyOrder: { type: Schema.Types.ObjectId, ref: "WeeklyOrder", required: true },
-
-    timestamps: true,
-
-    deliveryDay: {
-        type: [String],
-        required: [true, "Delivery Day is required"],
-        enum: [
-            "Monday",
-            "Tuesday",
-            "Wednesday",
-            "Thursday",
-            "Friday",
-            "Saturday",
-            "Sunday",
-            "Whatever"
-        ]
+    city: {
+      type: String,
+      required: [true, "City is required."],
     },
+    region: {
+      type: String,
+      required: [true, "Region is required."],
+    },
+    zipCode: {
+      type: String,
+      required: [true, "ZipCode is required."],
+    },
+    country: {
+      type: String,
+      required: [true, "Country is required."],
+    },
+    phone: {
+      type: String,
+      required: [true, "Phone number is required."],
+    },
+  },
+  // ELIMINARRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
+  //weeklyOrder: { type: Schema.Types.ObjectId, ref: "WeeklyOrder", required: true },
 
-    paymentMethod: {
-        type: Schema.Types.ObjectId, ref: "Payment", required: true
-    }
+  mealPlan: { Type: Schema.Types.ObjectId, ref: "MealPlan", required: true },
+  
+  user: { Type: Schema.Types.ObjectId, ref: "User", required: true },
 
-})
+  timestamps: true,
+
+  deliveryDay: {
+    type: [String],
+    required: [true, "Delivery Day is required"],
+    enum: [
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+      "Sunday",
+      "Whatever",
+    ],
+  },
+  paymentMethod: {
+    type: PaymentSchema,
+    required: true,
+  },
+});
 
 const Subscription = model("Subscription", subscriptionSchema);
 

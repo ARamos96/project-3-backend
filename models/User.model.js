@@ -1,6 +1,5 @@
 const { Schema, model } = require("mongoose");
 
-
 const { categoriesSchema } = require("./Categories.model");
 
 const userSchema = new Schema(
@@ -31,10 +30,7 @@ const userSchema = new Schema(
       default: "user",
       enum: ["user", "admin"],
     },
-    categories: {
-      type: categoriesSchema,
-      required: false,
-    },
+    subscription: { type: Schema.Types.ObjectId, ref: "Subscription" },
   },
   {
     timestamps: true,
@@ -44,4 +40,3 @@ const userSchema = new Schema(
 const User = model("User", userSchema);
 
 module.exports = User;
-

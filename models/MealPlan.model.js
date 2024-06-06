@@ -19,12 +19,26 @@ const mealPlanSchema = new Schema({
     type: Number,
     required: true,
   },
-  category: { type: Schema.Types.ObjectId, ref: "Category", required: true },
+
+  diet: {
+    type: [String],
+    required: true,
+    enum: [
+      "Vegan",
+      "Vegetarian",
+      "Animal-protein",
+      "Pescatarian",
+      "Low-calories",
+      "High-protein",
+      "Keto",
+      "Paleo",
+      "Gluten-free",
+      "Dairy-free",
+    ],
+  },
 
   dishes: [{ type: Schema.Types.ObjectId, ref: "Dish", required: true }],
 });
-
-
 
 const MealPlan = model("MealPlan", mealPlanSchema);
 module.exports = MealPlan;
