@@ -30,8 +30,8 @@ app.use("/mealplan", mealPlanRoutes);
 // const userRoutes = require("./routes/users.routes");
 // app.use("/user", userRoutes);
 
-// const subscriptionRoutes = require("./routes/subscription.routes");
-// app.use("/subscription", subscriptionRoutes);
+const subscriptionRoutes = require("./routes/subscription.routes");
+app.use("/subscription", subscriptionRoutes);
 
 // ❗ To handle errors. Routes that don't exist or errors that you handle in specific routes
 require("./error-handling")(app);
