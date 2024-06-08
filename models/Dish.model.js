@@ -63,6 +63,16 @@ const dishSchema = new Schema({
       required: true,
     },
   },
+  bigImageURL: {
+    type: String,
+    default: "https://placehold.co/600x400?text=Hello\nDish",
+    required: true,
+  },
+  smallImageURL: {
+    type: String,
+    default: "https://placehold.co/100x100",
+    required: true,
+  },
 });
 
 const Dish = model("Dish", dishSchema);
