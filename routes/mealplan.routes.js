@@ -15,16 +15,16 @@ router.get("/", (req, res, next) => {
     .catch((err) => next(err));
 });
 
-// GET a single dish by ID
+// GET a single mealplan by ID
 router.get("/:id", (req, res, next) => {
   MealPlan.findById(req.params.id)
-    .then((dish) => {
-      res.status(200).json(dish);
+    .then((mealplan) => {
+      res.status(200).json(mealplan);
     })
     .catch((err) => next(err));
 });
 
-// POST a new dish
+// POST a new mealplan
 router.post("/", (req, res, next) => {
   MealPlan.create(req.body)
     .then((newMealPlan) => {
@@ -33,7 +33,7 @@ router.post("/", (req, res, next) => {
     .catch((err) => next(err));
 });
 
-// PUT (replace) a dish by ID
+// PUT (replace) a mealplan by ID
 router.put("/:id", (req, res, next) => {
   const { id } = req.params;
 
@@ -44,7 +44,7 @@ router.put("/:id", (req, res, next) => {
     .catch((err) => next(err));
 });
 
-// PATCH (update) a dish by ID
+// PATCH (update) a mealplan by ID
 router.patch("/:id", (req, res, next) => {
   const { id } = req.params;
 
@@ -55,7 +55,7 @@ router.patch("/:id", (req, res, next) => {
     .catch((err) => next(err));
 });
 
-// DELETE a dish by ID
+// DELETE a mealplan by ID
 router.delete("/:id", (req, res, next) => {
   const { id } = req.params;
 

@@ -15,7 +15,7 @@ router.get("/", (req, res, next) => {
     .catch((err) => next(err));
 });
 
-// GET a single dish by ID
+// GET a single subscription by ID
 router.get("/:id", (req, res, next) => {
   Subscription.findById(req.params.id)
     .then((dish) => {
@@ -24,7 +24,7 @@ router.get("/:id", (req, res, next) => {
     .catch((err) => next(err));
 });
 
-// POST a new dish
+// POST a new subscription
 router.post("/", (req, res, next) => {
   Subscription.create(req.body)
     .then((newSubscription) => {
@@ -33,7 +33,7 @@ router.post("/", (req, res, next) => {
     .catch((err) => next(err));
 });
 
-// PUT (replace) a dish by ID
+// PUT (replace) a subscription by ID
 router.put("/:id", (req, res, next) => {
   const { id } = req.params;
 
@@ -44,7 +44,7 @@ router.put("/:id", (req, res, next) => {
     .catch((err) => next(err));
 });
 
-// PATCH (update) a dish by ID
+// PATCH (update) a subscription by ID
 router.patch("/:id", (req, res, next) => {
   const { id } = req.params;
 
@@ -55,7 +55,7 @@ router.patch("/:id", (req, res, next) => {
     .catch((err) => next(err));
 });
 
-// DELETE a dish by ID
+// DELETE a subscription by ID
 router.delete("/:id", (req, res, next) => {
   const { id } = req.params;
 
