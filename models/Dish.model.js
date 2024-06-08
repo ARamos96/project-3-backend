@@ -55,9 +55,6 @@ const dishSchema = new Schema({
       type: Number,
       required: true,
     },
-    carbsOfWhichSugars: {
-      type: Number,
-    },
     fiber: {
       type: Number,
       required: true,

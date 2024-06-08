@@ -36,6 +36,7 @@ const userSchema = new Schema(
     ],
     favDishes: [{ type: Schema.Types.ObjectId, ref: "Dish" }],
     paymentMethod: { type: Schema.Types.ObjectId, ref: "Payment" },
+    address: { type: Schema.Types.ObjectId, ref: "Address" },
   },
   {
     timestamps: true,
