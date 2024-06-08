@@ -25,6 +25,8 @@ const addressSchema = new Schema({
     type: String,
     required: [true, "Phone number is required."],
   },
+  user: { type: Schema.Types.ObjectId, ref: "User" },
+  subscription: { type: Schema.Types.ObjectId, ref: "Subscription" },
 });
 
 const Address = model("Address", addressSchema);
