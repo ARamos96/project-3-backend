@@ -30,7 +30,12 @@ const userSchema = new Schema(
       default: "user",
       enum: ["user", "admin"],
     },
-    subscription: { type: Schema.Types.ObjectId, ref: "Subscription" },
+    activeSubscription: { type: Schema.Types.ObjectId, ref: "Subscription" },
+    previousSubscriptions: [
+      { type: Schema.Types.ObjectId, ref: "Subscription" },
+    ],
+    favDishes: [{ type: Schema.Types.ObjectId, ref: "Dish" }],
+    paymentMethod: { type: Schema.Types.ObjectId, ref: "Payment" },
   },
   {
     timestamps: true,
