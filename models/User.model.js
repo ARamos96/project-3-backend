@@ -1,7 +1,5 @@
 const { Schema, model } = require("mongoose");
 
-const { categoriesSchema } = require("./Categories.model");
-
 const userSchema = new Schema(
   {
     email: {
