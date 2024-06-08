@@ -15,6 +15,9 @@ const subscriptionSchema = new Schema(
     user: { type: Schema.Types.ObjectId, ref: "User", required: true },
 
     mealPlan: { type: Schema.Types.ObjectId, ref: "MealPlan", required: true },
+
+    dishes: [{ type: Schema.Types.ObjectId, ref: "Dish", required: true }],
+
     deliveryDay: {
       type: [String],
       required: [true, "Delivery Day is required"],
