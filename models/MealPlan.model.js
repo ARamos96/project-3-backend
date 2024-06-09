@@ -36,6 +36,7 @@ const mealPlanSchema = new Schema({
       "Dairy-free",
     ],
   },
+  user: { type: Schema.Types.ObjectId, ref: "User", required: true },
 });
 
 const MealPlan = model("MealPlan", mealPlanSchema);
