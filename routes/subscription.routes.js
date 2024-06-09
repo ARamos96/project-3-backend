@@ -7,7 +7,9 @@ const Subscription = require("../models/Subscription.model");
 const { isAuthenticated } = require("../middleware/jwt.middleware");
 
 // GET all subscriptions
-router.get("/", (req, res, next) => {
+router.get("/",
+  isAuthenticated,
+  roleValidation(["admin"]), (req, res, next) => {
   Subscription.find()
     .then((subscriptions) => {
       res.status(200).json(subscriptions);
@@ -16,7 +18,9 @@ router.get("/", (req, res, next) => {
 });
 
 // GET a single subscription by ID
-router.get("/:id", (req, res, next) => {
+router.get("/:id",
+  isAuthenticated,
+  roleValidation(["admin", "user"]), (req, res, next) => {
   Subscription.findById(req.params.id)
     .then((dish) => {
       res.status(200).json(dish);
@@ -25,7 +29,9 @@ router.get("/:id", (req, res, next) => {
 });
 
 // POST a new subscription
-router.post("/", (req, res, next) => {
+router.post("/",
+  isAuthenticated,
+  roleValidation(["admin", "user"]), (req, res, next) => {
   Subscription.create(req.body)
     .then((newSubscription) => {
       res.status(201).json(newSubscription);
@@ -34,7 +40,9 @@ router.post("/", (req, res, next) => {
 });
 
 // PUT (replace) a subscription by ID
-router.put("/:id", (req, res, next) => {
+router.put("/:id",
+  isAuthenticated,
+  roleValidation(["admin", "user"]), (req, res, next) => {
   const { id } = req.params;
 
   Subscription.findByIdAndUpdate(id, req.body, { new: true })
@@ -45,7 +53,9 @@ router.put("/:id", (req, res, next) => {
 });
 
 // PATCH (update) a subscription by ID
-router.patch("/:id", (req, res, next) => {
+router.patch("/:id",
+  isAuthenticated,
+  roleValidation(["admin", "user"]), (req, res, next) => {
   const { id } = req.params;
 
   Subscription.findByIdAndUpdate(id, req.body, { new: true, runValidators: true })
@@ -56,7 +66,9 @@ router.patch("/:id", (req, res, next) => {
 });
 
 // DELETE a subscription by ID
-router.delete("/:id", (req, res, next) => {
+router.delete("/:id",
+  isAuthenticated,
+  roleValidation(["admin", "user"]), (req, res, next) => {
   const { id } = req.params;
 
   Subscription.findByIdAndDelete(id)
