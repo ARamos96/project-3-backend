@@ -7,75 +7,96 @@ const Subscription = require("../models/Subscription.model");
 const { isAuthenticated } = require("../middleware/jwt.middleware");
 
 // GET all subscriptions
-router.get("/",
+router.get(
+  "/",
   isAuthenticated,
-  roleValidation(["admin"]), (req, res, next) => {
-  Subscription.find()
-    .then((subscriptions) => {
-      res.status(200).json(subscriptions);
-    })
-    .catch((err) => next(err));
-});
+  roleValidation(["admin"]),
+  (req, res, next) => {
+    Subscription.find()
+      .then((subscriptions) => {
+        res.status(200).json(subscriptions);
+      })
+      .catch((err) => next(err));
+  }
+);
 
 // GET a single subscription by ID
-router.get("/:id",
+router.get(
+  "/:id",
   isAuthenticated,
-  roleValidation(["admin", "user"]), (req, res, next) => {
-  Subscription.findById(req.params.id)
-    .then((dish) => {
-      res.status(200).json(dish);
-    })
-    .catch((err) => next(err));
-});
+  roleValidation(["admin", "user"]),
+  (req, res, next) => {
+    Subscription.findById(req.params.id)
+      .then((dish) => {
+        res.status(200).json(dish);
+      })
+      .catch((err) => next(err));
+  }
+);
 
 // POST a new subscription
-router.post("/",
+router.post(
+  "/",
   isAuthenticated,
-  roleValidation(["admin", "user"]), (req, res, next) => {
-  Subscription.create(req.body)
-    .then((newSubscription) => {
-      res.status(201).json(newSubscription);
-    })
-    .catch((err) => next(err));
-});
+  roleValidation(["admin", "user"]),
+  (req, res, next) => {
+    Subscription.create(req.body)
+      .then((newSubscription) => {
+        res.status(201).json(newSubscription);
+      })
+      .catch((err) => next(err));
+  }
+);
 
 // PUT (replace) a subscription by ID
-router.put("/:id",
+router.put(
+  "/:id",
   isAuthenticated,
-  roleValidation(["admin", "user"]), (req, res, next) => {
-  const { id } = req.params;
+  roleValidation(["admin", "user"]),
+  (req, res, next) => {
+    const { id } = req.params;
 
-  Subscription.findByIdAndUpdate(id, req.body, { new: true })
-    .then((updatedSubscription) => {
-      res.status(200).json(updatedSubscription);
-    })
-    .catch((err) => next(err));
-});
+    Subscription.findByIdAndUpdate(id, req.body, { new: true })
+      .then((updatedSubscription) => {
+        res.status(200).json(updatedSubscription);
+      })
+      .catch((err) => next(err));
+  }
+);
 
 // PATCH (update) a subscription by ID
-router.patch("/:id",
+router.patch(
+  "/:id",
   isAuthenticated,
-  roleValidation(["admin", "user"]), (req, res, next) => {
-  const { id } = req.params;
+  roleValidation(["admin", "user"]),
+  (req, res, next) => {
+    const { id } = req.params;
 
-  Subscription.findByIdAndUpdate(id, req.body, { new: true, runValidators: true })
-    .then((updatedSubscription) => {
-      res.status(200).json(updatedSubscription);
+    Subscription.findByIdAndUpdate(id, req.body, {
+      new: true,
+      runValidators: true,
     })
-    .catch((err) => next(err));
-});
+      .then((updatedSubscription) => {
+        res.status(200).json(updatedSubscription);
+      })
+      .catch((err) => next(err));
+  }
+);
 
 // DELETE a subscription by ID
-router.delete("/:id",
+router.delete(
+  "/:id",
   isAuthenticated,
-  roleValidation(["admin", "user"]), (req, res, next) => {
-  const { id } = req.params;
+  roleValidation(["admin", "user"]),
+  (req, res, next) => {
+    const { id } = req.params;
 
-  Subscription.findByIdAndDelete(id)
-    .then((deletedSubscription) => {
-      res.status(200).json(deletedSubscription);
-    })
-    .catch((err) => next(err));
-});
+    Subscription.findByIdAndDelete(id)
+      .then((deletedSubscription) => {
+        res.status(200).json(deletedSubscription);
+      })
+      .catch((err) => next(err));
+  }
+);
 
 module.exports = router;
