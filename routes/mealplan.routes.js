@@ -13,6 +13,7 @@ router.get(
   roleValidation(["admin"]),
   (req, res, next) => {
     MealPlan.find()
+      .populate("user")
       .then((mealplans) => {
         res.status(200).json(mealplans);
       })
@@ -27,6 +28,7 @@ router.get(
   roleValidation(["admin", "user"]),
   (req, res, next) => {
     MealPlan.findById(req.params.id)
+      .populate("user")
       .then((mealplan) => {
         res.status(200).json(mealplan);
       })
