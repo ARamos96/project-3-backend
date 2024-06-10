@@ -140,27 +140,46 @@ router.patch(
   }
 );
 
-// DELETE a subscription by ID
+// DELETE a subscription by ID -
+// remove references from user, address and payment
 router.delete(
   "/:id",
   isAuthenticated,
-  roleValidation(["admin", "user"]),
-  (req, res, next) => {
+  roleValidation(["admin"]),
+  async (req, res, next) => {
     const { id } = req.params;
 
-    /*
-    Al borrar una subscription...
+    try {
+      const subscription = await Subscription.findById(id);
+      if (!subscription) {
+        return res.status(404).json({ error: "Subscription not found" });
+      }
 
-DELETE subscription id de address
-DELETE subscription id de paymentMethod
-DELETE subscription id (activeSubscription, previousSubscriptions) de user
-    */
+      // Remove references from user, address and payment
+      const user = await User.findById(subscription.user);
+      if (user) {
+        user.activeSubscription = null;
+        await user.save();
+      }
 
-    Subscription.findByIdAndDelete(id)
-      .then((deletedSubscription) => {
-        res.status(200).json(deletedSubscription);
-      })
-      .catch((err) => next(err));
+      const address = await Address.findById(subscription.shippingAddress);
+      if (address) {
+        address.subscription = null;
+        await address.save();
+      }
+
+      const payment = await Payment.findById(subscription.paymentMethod);
+      if (payment) {
+        payment.subscription = null;
+        await payment.save();
+      }
+
+      await Subscription.findByIdAndDelete(id);
+
+      res.status(200).json({ message: "Subscription deleted successfully" });
+    } catch (err) {
+      next(err);
+    }
   }
 );
 
