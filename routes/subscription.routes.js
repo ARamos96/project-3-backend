@@ -60,34 +60,43 @@ router.post(
     // try catch block
     try {
       // Create address and payment
-      const newAddress = await Address.create(shippingAddress);
-      const newPayment = await Payment.create(paymentMethod);
+      const [newAddress, newPayment] = await Promise.all([
+        Address.create(shippingAddress),
+        Payment.create(paymentMethod),
+      ]);
 
-      // Find user and add references - from user to address and payment and viceversa
+      // Find user and add references
       const foundUser = await User.findById(user);
+      if (!foundUser) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
       newAddress.user = foundUser._id;
       newPayment.user = foundUser._id;
       foundUser.paymentMethod = newPayment._id;
       foundUser.address = newAddress._id;
 
-      // Check required fields
-      const newSubscription = await Subscription.create(
-        {shippingAddress: newAddress._id,
+      // Create new subscription
+      const newSubscription = await Subscription.create({
+        shippingAddress: newAddress._id,
         user,
         mealPlan,
         dishes,
         deliveryDay,
-        paymentMethod: newPayment._id}
-      );
+        paymentMethod: newPayment._id,
+      });
 
       // Add subscription references
       foundUser.activeSubscription = newSubscription._id;
       newAddress.subscription = newSubscription._id;
       newPayment.subscription = newSubscription._id;
 
-      await foundUser.save();
-      await newAddress.save();
-      await newPayment.save();
+      // Save all changes
+      await Promise.all([
+        foundUser.save(),
+        newAddress.save(),
+        newPayment.save(),
+      ]);
 
       res.status(201).json(newSubscription);
     } catch (err) {
@@ -138,6 +147,14 @@ router.delete(
   roleValidation(["admin", "user"]),
   (req, res, next) => {
     const { id } = req.params;
+
+    /*
+    Al borrar una subscription...
+
+DELETE subscription id de address
+DELETE subscription id de paymentMethod
+DELETE subscription id (activeSubscription, previousSubscriptions) de user
+    */
 
     Subscription.findByIdAndDelete(id)
       .then((deletedSubscription) => {
