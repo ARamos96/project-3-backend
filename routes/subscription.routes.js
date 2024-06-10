@@ -59,11 +59,37 @@ router.post(
 
     // try catch block
     try {
-      // Create address and payment
-      const [newAddress, newPayment] = await Promise.all([
-        Address.create(shippingAddress),
-        Payment.create(paymentMethod),
-      ]);
+      const newAddress = null;
+      const newPayment = null;
+
+      // If shippingAddress or paymentMethod are strings i.e. object ids
+      if (
+        (typeof shippingAddress == "string") &
+        (typeof paymentMethod == "string")
+      ) {
+        [newAddress, newPayment] = await Promise.all([
+          Address.findById(shippingAddress),
+          Payment.findById(paymentMethod),
+        ]);
+        // If only one is an object id string, find existing object and create the other one
+      } else if (typeof shippingAddress == "string") {
+        newAddress = await Address.findById(shippingAddress);
+        newPayment = await Payment.create(paymentMethod);
+      } else if (typeof paymentMethod == "string") {
+        newPayment = await Payment.findById(paymentMethod);
+        newAddress = await Payment.create(paymentMethod);
+      } else if (
+        shippingAddress !== null &&
+        typeof shippingAddress === "object" &&
+        paymentMethod !== null &&
+        typeof paymentMethod === "object"
+      ) {
+        // Create new address and payment if both are objects
+        [newAddress, newPayment] = await Promise.all([
+          Address.create(shippingAddress),
+          Payment.create(paymentMethod),
+        ]);
+      }
 
       // Find user and add references
       const foundUser = await User.findById(user);
