@@ -7,10 +7,7 @@ const { addressSchema } = require("./Address.model");
 
 const subscriptionSchema = new Schema(
   {
-    shippingAddress: {
-      type: addressSchema,
-      required: true,
-    },
+    shippingAddress: { type: Schema.Types.ObjectId, ref: "Address" },
 
     user: { type: Schema.Types.ObjectId, ref: "User", required: true },
 
@@ -32,10 +29,7 @@ const subscriptionSchema = new Schema(
         "Whatever",
       ],
     },
-    paymentMethod: {
-      type: PaymentSchema,
-      required: true,
-    },
+    paymentMethod: { type: Schema.Types.ObjectId, ref: "Payment" },
   },
   {
     timestamps: true,
