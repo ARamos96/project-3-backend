@@ -41,34 +41,53 @@ router.get(
 );
 
 // POST a new subscription
+// Request body includes full address object and payment method to be created
 router.post(
   "/",
   isAuthenticated,
   roleValidation(["admin", "user"]),
   async (req, res, next) => {
     // Destructure schemas to create separately
-    const { shippingAddress, paymentMethod, user } = req.body;
+    const {
+      shippingAddress,
+      user,
+      mealPlan,
+      dishes,
+      deliveryDay,
+      paymentMethod,
+    } = req.body;
 
     // try catch block
     try {
-      const newSubscription = await Subscription.create(req.body);
+      // Create address and payment
+      const newAddress = await Address.create(shippingAddress);
+      const newPayment = await Payment.create(paymentMethod);
 
-      // find user
+      // Find user and add references - from user to address and payment and viceversa
       const foundUser = await User.findById(user);
+      newAddress.user = foundUser._id;
+      newPayment.user = foundUser._id;
+      foundUser.paymentMethod = newPayment._id;
+      foundUser.address = newAddress._id;
 
-      // Add references
-      newSubscription.shippingAddress.subscription = newSubscription._id;
-      newSubscription.shippingAddress.user = foundUser._id;
-      await newSubscription.shippingAddress.save();
+      // Check required fields
+      const newSubscription = await Subscription.create(
+        {shippingAddress: newAddress._id,
+        user,
+        mealPlan,
+        dishes,
+        deliveryDay,
+        paymentMethod: newPayment._id}
+      );
 
-      newSubscription.paymentMethod.subscription = newSubscription._id;
-      newSubscription.paymentMethod.user = foundUser._id;
-      await newSubscription.paymentMethod.save();
-
+      // Add subscription references
       foundUser.activeSubscription = newSubscription._id;
-      foundUser.paymentMethod = newSubscription.paymentMethod._id;
-      foundUser.address = newSubscription.shippingAddress._id;
+      newAddress.subscription = newSubscription._id;
+      newPayment.subscription = newSubscription._id;
+
       await foundUser.save();
+      await newAddress.save();
+      await newPayment.save();
 
       res.status(201).json(newSubscription);
     } catch (err) {
