@@ -55,6 +55,7 @@ router.put(
   "/:id",
   isAuthenticated,
   roleValidation(["admin", "user"]),
+  restrictedFields(["user"]),
   (req, res, next) => {
     const { id } = req.params;
 
@@ -71,6 +72,7 @@ router.patch(
   "/:id",
   isAuthenticated,
   roleValidation(["admin", "user"]),
+  restrictedFields(["user"]),
   (req, res, next) => {
     const { id } = req.params;
 
@@ -87,14 +89,25 @@ router.delete(
   "/:id",
   isAuthenticated,
   roleValidation(["admin", "user"]),
-  (req, res, next) => {
-    const { id } = req.params;
+  async (req, res, next) => {
+    try {
+      const mealPlan = MealPlan.findById(req.params.id);
+      if (!mealPlan) {
+        return res.status(404).json({ message: "Mealplan not found" });
+      }
 
-    MealPlan.findByIdAndDelete(id)
-      .then((deletedMealPlan) => {
-        res.status(200).json(deletedMealPlan);
-      })
-      .catch((err) => next(err));
+      // Remove references from user
+      const user = await User.findById(mealPlan.user);
+      if (user) {
+        user.mealPlan = null;
+        await user.save();
+      }
+
+      await mealPlan.remove();
+      res.status(200).json({ message: "Mealplan deleted successfully" });
+    } catch {
+      next(err);
+    }
   }
 );
 
