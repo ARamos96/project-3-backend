@@ -34,6 +34,7 @@ if (!req.headers.authorization) {
     }
 
     // If isSameUser parameter is passed and it equals the following string
+    /*
     if (
       isSameUser != undefined &&
       isSameUser.localeCompare("isSameUser") == 0
@@ -46,6 +47,7 @@ if (!req.headers.authorization) {
       const objectRequested = req.baseUrl.slice(1);
       console.log(JSON.stringify(decoded));
     }
+      */
     next();
   };
 };
