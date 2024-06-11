@@ -10,6 +10,7 @@ const User = require("../models/User.model");
 const MealPlan = require("../models/MealPlan.model");
 const Dish = require("../models/Dish.model");
 const { isAuthenticated } = require("../middleware/jwt.middleware");
+const restrictedFields = require("../middleware/restrictedFields");
 
 // GET all subscriptions
 router.get(
@@ -154,29 +155,23 @@ router.patch(
   "/:id",
   isAuthenticated,
   roleValidation(["admin", "user"]),
+  restrictedFields([
+    "_id",
+    "shippingAddress",
+    "user",
+    "mealPlan",
+    "paymentMethod",
+  ]),
   (req, res, next) => {
     const { id } = req.params;
-
-    // If the request contains these fields and the requester is not an admin, reject change
-    if (
-      ["_id", "shippingAddress", "user", "mealPlan", "paymentMethod"].some((key) =>
-        Object.keys(req.body).includes(key)
-      ) &&
-      req.payload.role !== "admin"
-    ) {
-      return res
-        .status(403)
-        .json({ message: "Access forbidden: insufficient rights" });
-    } else {
-      Subscription.findByIdAndUpdate(id, req.body, {
-        new: true,
-        runValidators: true,
+    Subscription.findByIdAndUpdate(id, req.body, {
+      new: true,
+      runValidators: true,
+    })
+      .then((updatedSubscription) => {
+        res.status(200).json(updatedSubscription);
       })
-        .then((updatedSubscription) => {
-          res.status(200).json(updatedSubscription);
-        })
-        .catch((err) => next(err));
-    }
+      .catch((err) => next(err));
   }
 );
 
