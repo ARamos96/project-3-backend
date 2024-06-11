@@ -7,6 +7,8 @@ const Subscription = require("../models/Subscription.model");
 const { Address } = require("../models/Address.model");
 const { Payment } = require("../models/PaymentMethod.model");
 const User = require("../models/User.model");
+const MealPlan = require("../models/MealPlan.model");
+const Dish = require("../models/Dish.model");
 const { isAuthenticated } = require("../middleware/jwt.middleware");
 
 // GET all subscriptions
@@ -31,7 +33,7 @@ router.get(
   (req, res, next) => {
     Subscription.findById(req.params.id)
       .populate("user")
-      .populate("mealplan")
+      .populate("mealPlan")
       .populate("dishes")
       .then((dish) => {
         res.status(200).json(dish);
@@ -155,14 +157,26 @@ router.patch(
   (req, res, next) => {
     const { id } = req.params;
 
-    Subscription.findByIdAndUpdate(id, req.body, {
-      new: true,
-      runValidators: true,
-    })
-      .then((updatedSubscription) => {
-        res.status(200).json(updatedSubscription);
+    // If the request contains these fields and the requester is not an admin, reject change
+    if (
+      ["_id", "shippingAddress", "user", "mealPlan", "paymentMethod"].some((key) =>
+        Object.keys(req.body).includes(key)
+      ) &&
+      req.payload.role !== "admin"
+    ) {
+      return res
+        .status(403)
+        .json({ message: "Access forbidden: insufficient rights" });
+    } else {
+      Subscription.findByIdAndUpdate(id, req.body, {
+        new: true,
+        runValidators: true,
       })
-      .catch((err) => next(err));
+        .then((updatedSubscription) => {
+          res.status(200).json(updatedSubscription);
+        })
+        .catch((err) => next(err));
+    }
   }
 );
 
