@@ -4,7 +4,7 @@ const router = express.Router();
 const roleValidation = require("../middleware/roleValidation");
 const restrictedFields = require("../middleware/restrictedFields");
 
-const MealPlan = require("../models/MealPlan.model");z
+const MealPlan = require("../models/MealPlan.model");
 const { isAuthenticated } = require("../middleware/jwt.middleware");
 
 // GET all mealplans
