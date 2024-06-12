@@ -107,10 +107,32 @@ router.post("/login", (req, res, next) => {
 
       if (passwordCorrect) {
         // Deconstruct the user object to omit the password
-        const { _id, email, name, role } = foundUser;
+        const {
+          _id,
+          email,
+          name,
+          lastName,
+          role,
+          activeSubscription,
+          previousSubscriptions,
+          favDishes,
+          paymentMethod,
+          address,
+        } = foundUser;
 
         // Create an object that will be set as the token payload
-        const payload = { _id, email, name, role };
+        const payload = {
+          _id,
+          email,
+          name,
+          lastName,
+          role,
+          activeSubscription,
+          previousSubscriptions,
+          favDishes,
+          paymentMethod,
+          address,
+        };
 
         // Create a JSON Web Token and sign it
         const authToken = jwt.sign(payload, process.env.TOKEN_SECRET, {
@@ -140,17 +162,16 @@ router.get("/verify", isAuthenticated, (req, res, next) => {
 //Delete /auth/user/:userId - Delete an existing user
 
 router.delete("/user/:userId", isAuthenticated, (req, res, next) => {
-  const {userId} = req.params;
+  const { userId } = req.params;
   User.findByIdAndDelete(userId)
     .then((deletedUser) => {
-      if(!deletedUser){
-        res.status(404).json({message: "User not found"})
+      if (!deletedUser) {
+        res.status(404).json({ message: "User not found" });
         return;
       }
-      res.status(200).json({message: "User deleted successfully"});
+      res.status(200).json({ message: "User deleted successfully" });
     })
     .catch((err) => next(err));
-
-})
+});
 
 module.exports = router;
