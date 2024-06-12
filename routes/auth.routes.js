@@ -7,8 +7,13 @@ const bcrypt = require("bcrypt");
 // ℹ️ Handles password encryption
 const jwt = require("jsonwebtoken");
 
-// Require the User model in order to interact with the database
+// Require the models in order to interact with the database
 const User = require("../models/User.model");
+const { Address } = require("../models/Address.model");
+const Subscription = require("../models/Subscription.model");
+const Dish = require("../models/Dish.model");
+const { Payment } = require("../models/PaymentMethod.model");
+const MealPlan = require("../models/MealPlan.model.js");
 
 // Require necessary (isAuthenticated) middleware in order to control access to specific routes
 const { isAuthenticated } = require("../middleware/jwt.middleware.js");
@@ -83,70 +88,97 @@ router.post("/signup", (req, res, next) => {
     .catch((err) => next(err)); // In this case, we send error handling to the error handling middleware.
 });
 
-// POST  /auth/login - Verifies email and password and returns a JWT
-router.post("/login", (req, res, next) => {
+// POST /auth/login - Verifies email and password and returns a JWT
+router.post("/login", async (req, res, next) => {
   const { email, password } = req.body;
 
-  // Check if email or password are provided as empty string
+  // Check if email or password are provided as empty strings
   if (email === "" || password === "") {
-    res.status(400).json({ message: "Provide email and password." });
-    return;
+    return res.status(400).json({ message: "Provide email and password." });
   }
 
-  // Check the users collection if a user with the same email exists
-  User.findOne({ email })
-    .then((foundUser) => {
-      if (!foundUser) {
-        // If the user is not found, send an error response
-        res.status(401).json({ message: "User not found." });
-        return;
+  try {
+    // Check the users collection if a user with the same email exists
+    const foundUser = await User.findOne({ email });
+
+    if (!foundUser) {
+      // If the user is not found, send an error response
+      return res.status(401).json({ message: "User not found." });
+    }
+
+    // Compare the provided password with the one saved in the database
+    const passwordCorrect = bcrypt.compareSync(password, foundUser.password);
+
+    if (passwordCorrect) {
+      // Populate the user model
+      const populatedUser = await User.findById(foundUser._id)
+        .populate("paymentMethod")
+        .populate("address");
+
+      // Populate the activeSubscription with nested fields
+      if (populatedUser.activeSubscription) {
+        populatedUser.activeSubscription = await Subscription.findById(
+          populatedUser.activeSubscription
+        )
+          .populate("mealPlan")
+          .populate("dishes")
+          .populate("shippingAddress")
+          .populate("paymentMethod");
       }
 
-      // Compare the provided password with the one saved in the database
-      const passwordCorrect = bcrypt.compareSync(password, foundUser.password);
-
-      if (passwordCorrect) {
-        // Deconstruct the user object to omit the password
-        const {
-          _id,
-          email,
-          name,
-          lastName,
-          role,
-          activeSubscription,
-          previousSubscriptions,
-          favDishes,
-          paymentMethod,
-          address,
-        } = foundUser;
-
-        // Create an object that will be set as the token payload
-        const payload = {
-          _id,
-          email,
-          name,
-          lastName,
-          role,
-          activeSubscription,
-          previousSubscriptions,
-          favDishes,
-          paymentMethod,
-          address,
-        };
-
-        // Create a JSON Web Token and sign it
-        const authToken = jwt.sign(payload, process.env.TOKEN_SECRET, {
-          algorithm: "HS256",
-          expiresIn: "6h",
-        });
-
-        // Send the token as the response
-        res.status(200).json({ authToken: authToken });
-      } else {
-        res.status(401).json({ message: "Unable to authenticate the user" });
+      // Populate the previousSubscriptions with nested fields
+      if (
+        populatedUser.previousSubscriptions &&
+        populatedUser.previousSubscriptions.length
+      ) {
+        populatedUser.previousSubscriptions = await Promise.all(
+          populatedUser.previousSubscriptions.map((subId) =>
+            Subscription.findById(subId)
+              .populate("mealPlan")
+              .populate("dishes")
+              .populate("shippingAddress")
+              .populate("paymentMethod")
+          )
+        );
       }
-    })
-    .catch((err) => next(err)); // In this case, we send error handling to the error handling middleware.
+
+      // Populate favDishes
+      if (populatedUser.favDishes && populatedUser.favDishes.length) {
+        populatedUser.favDishes = await Promise.all(
+          populatedUser.favDishes.map((dishId) => Dish.findById(dishId))
+        );
+      }
+
+      // Create an object that will be set as the token payload
+      const payload = {
+        _id: populatedUser._id,
+        email: populatedUser.email,
+        name: populatedUser.name,
+        lastName: populatedUser.lastName,
+        role: populatedUser.role,
+        activeSubscription: populatedUser.activeSubscription,
+        previousSubscriptions: populatedUser.previousSubscriptions,
+        favDishes: populatedUser.favDishes,
+        paymentMethod: populatedUser.paymentMethod,
+        address: populatedUser.address,
+      };
+
+      // Create a JSON Web Token and sign it
+      const authToken = jwt.sign(payload, process.env.TOKEN_SECRET, {
+        algorithm: "HS256",
+        expiresIn: "6h",
+      });
+
+      // Send the token as the response
+      return res.status(200).json({ authToken: authToken });
+    } else {
+      return res
+        .status(401)
+        .json({ message: "Unable to authenticate the user" });
+    }
+  } catch (err) {
+    return next(err); // In this case, we send error handling to the error handling middleware.
+  }
 });
 
 // GET  /auth/verify  -  Used to verify JWT stored on the client
