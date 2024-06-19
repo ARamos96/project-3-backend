@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const bcrypt = require("bcrypt");
 
 const roleValidation = require("../middleware/roleValidation");
 
@@ -9,6 +10,49 @@ const { Address } = require("../models/Address.model");
 const { Payment } = require("../models/PaymentMethod.model");
 const { isAuthenticated } = require("../middleware/jwt.middleware");
 const restrictedFields = require("../middleware/restrictedFields");
+
+const populateUser = async (id) => {
+  // Populate the user model
+  const populatedUser = await User.findById(id)
+    .populate("paymentMethod")
+    .populate("address");
+
+  // Populate the activeSubscription with nested fields
+  if (populatedUser.activeSubscription) {
+    populatedUser.activeSubscription = await Subscription.findById(
+      populatedUser.activeSubscription
+    )
+      .populate("mealPlan")
+      .populate("dishes")
+      .populate("shippingAddress")
+      .populate("paymentMethod");
+  }
+
+  // Populate the previousSubscriptions with nested fields
+  if (
+    populatedUser.previousSubscriptions &&
+    populatedUser.previousSubscriptions.length
+  ) {
+    populatedUser.previousSubscriptions = await Promise.all(
+      populatedUser.previousSubscriptions.map((subId) =>
+        Subscription.findById(subId)
+          .populate("mealPlan")
+          .populate("dishes")
+          .populate("shippingAddress")
+          .populate("paymentMethod")
+      )
+    );
+  }
+
+  // Populate favDishes
+  if (populatedUser.favDishes && populatedUser.favDishes.length) {
+    populatedUser.favDishes = await Promise.all(
+      populatedUser.favDishes.map((dishId) => Dish.findById(dishId))
+    );
+  }
+
+  return populatedUser;
+};
 
 // GET all users
 router.get(
@@ -29,12 +73,14 @@ router.get(
   "/:id",
   isAuthenticated,
   roleValidation(["admin", "user"]),
-  (req, res, next) => {
-    User.findById(req.params.id)
-      .then((dish) => {
-        res.status(200).json(dish);
-      })
-      .catch((err) => next(err));
+  async (req, res, next) => {
+    // get user by ID
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    const populatedUser = await populateUser(user._id.toString());
+    res.status(200).json(populatedUser);
   }
 );
 
@@ -70,14 +116,18 @@ router.patch(
   isAuthenticated,
   roleValidation(["admin", "user"]),
   restrictedFields(["role", "password"]),
-  (req, res, next) => {
+  async (req, res, next) => {
     const { id } = req.params;
 
-    User.findByIdAndUpdate(id, req.body, { new: true, runValidators: true })
-      .then((updatedUser) => {
-        res.status(200).json(updatedUser);
-      })
-      .catch((err) => next(err));
+    const user = await User.findByIdAndUpdate(id, req.body);
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const populatedUser = await populateUser(user._id.toString());
+
+    return res.status(200).json(populatedUser);
   }
 );
 
@@ -95,6 +145,7 @@ router.patch(
       return res.status(404).json({ error: "User not found" });
     }
     const isValid = bcrypt.compareSync(oldPassword, user.password);
+
     if (!isValid) {
       return res.status(401).json({ error: "Previous password is not valid" });
     }

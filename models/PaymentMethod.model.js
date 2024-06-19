@@ -6,7 +6,6 @@ const PaymentSchema = new Schema({
   method: {
     type: String,
     required: true,
-    enum: ["Credit Card", "Debit Card"],
   },
   number: {
     type: String,
@@ -34,4 +33,5 @@ const PaymentSchema = new Schema({
 });
 
 const Payment = model("Payment", PaymentSchema);
+
 module.exports = { Payment, PaymentSchema };
