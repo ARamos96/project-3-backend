@@ -93,6 +93,62 @@ router.post("/", restrictedFields(["role"]), (req, res, next) => {
     .catch((err) => next(err));
 });
 
+// POST a new address and link it to the user
+router.post(
+  "/:id/address",
+  isAuthenticated,
+  roleValidation(["admin", "user"]),
+  async (req, res, next) => {
+    try {
+      // Get user, return error if not found
+      const user = await User.findById(req.params.id);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      // Create address and link it to user
+      const address = await Address.create(req.body);
+      user.address = address._id;
+      // Link user to new address
+      address.user = user._id;
+      await Promise.all([user.save(), address.save()]);
+
+      //Return address
+      return res.status(201).json(address);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+// POST a new address and link it to the user
+router.post(
+  "/:id/payment",
+  isAuthenticated,
+  roleValidation(["admin", "user"]),
+  async (req, res, next) => {
+    try {
+      // Get user, return error if not found
+      const user = await User.findById(req.params.id);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      // Create payment and link it to user
+      const payment = await Payment.create(req.body);
+      user.payment = payment._id;
+      // Link user to new payment
+      payment.user = user._id;
+      await Promise.all([user.save(), payment.save()]);
+
+      //Return payment
+      return res.status(201).json(payment);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
 // PUT (replace) a user by ID
 router.put(
   "/:id",
