@@ -36,6 +36,7 @@ router.get(
       .populate("user")
       .populate("mealPlan")
       .populate("dishes")
+      .populate("shippingAddress")
       .then((dish) => {
         res.status(200).json(dish);
       })
@@ -62,8 +63,8 @@ router.post(
 
     // try catch block
     try {
-      const newAddress = null;
-      const newPayment = null;
+      let newAddress = null;
+      let newPayment = null;
 
       // If shippingAddress or paymentMethod are strings i.e. object ids
       if (
@@ -126,6 +127,8 @@ router.post(
         newAddress.save(),
         newPayment.save(),
       ]);
+
+      newSubscription.populate("user").populate("mealPlan").populate("dishes");
 
       res.status(201).json(newSubscription);
     } catch (err) {
