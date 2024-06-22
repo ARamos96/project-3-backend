@@ -37,6 +37,7 @@ router.get(
       .populate("mealPlan")
       .populate("dishes")
       .populate("shippingAddress")
+      .populate("paymentMethod")
       .then((dish) => {
         res.status(200).json(dish);
       })
@@ -128,7 +129,12 @@ router.post(
         newPayment.save(),
       ]);
 
-      newSubscription.populate("user").populate("mealPlan").populate("dishes");
+      newSubscription
+        .populate("user")
+        .populate("mealPlan")
+        .populate("dishes")
+        .populate("shippingAddress")
+        .populate("paymentMethod");
 
       res.status(201).json(newSubscription);
     } catch (err) {
