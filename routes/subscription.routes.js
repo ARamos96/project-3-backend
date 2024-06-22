@@ -38,8 +38,8 @@ router.get(
       .populate("dishes")
       .populate("shippingAddress")
       .populate("paymentMethod")
-      .then((dish) => {
-        res.status(200).json(dish);
+      .then((subscription) => {
+        res.status(200).json(subscription);
       })
       .catch((err) => next(err));
   }
@@ -107,8 +107,14 @@ router.post(
       foundUser.paymentMethod = newPayment._id;
       foundUser.address = newAddress._id;
 
+      // Find meal plan
+      const foundMealPlan = await MealPlan.findById(mealPlan);
+      if (!foundMealPlan) {
+        return res.status(404).json({ error: "Meal plan not found" });
+      }
+
       // Create new subscription
-      const newSubscription = await Subscription.create({
+      let newSubscription = await Subscription.create({
         shippingAddress: newAddress._id,
         user,
         mealPlan,
@@ -129,14 +135,15 @@ router.post(
         newPayment.save(),
       ]);
 
-      newSubscription
+      newSubscription = Subscription.findById(newSubscription._id)
         .populate("user")
         .populate("mealPlan")
         .populate("dishes")
         .populate("shippingAddress")
-        .populate("paymentMethod");
-
-      res.status(201).json(newSubscription);
+        .populate("paymentMethod")
+        .then((populatedSubscription) => {
+          res.status(201).json(populatedSubscription);
+        });
     } catch (err) {
       next(err);
     }
