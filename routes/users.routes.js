@@ -149,8 +149,6 @@ router.post(
   }
 );
 
-<<<<<<< Updated upstream
-=======
 // POST a new address and link it to the user
 router.post(
   "/:id/address",
@@ -250,7 +248,6 @@ app.post("/:id/delete-dish", async (req, res, next) => {
   }
 });
 
->>>>>>> Stashed changes
 // PUT (replace) a user by ID
 router.put(
   "/:id",
