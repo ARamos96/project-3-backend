@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const moment = require("moment");
 
 // ℹ️ Handles password encryption
 const bcrypt = require("bcrypt");
@@ -111,22 +112,43 @@ router.post("/login", async (req, res, next) => {
 
     if (passwordCorrect) {
       // Populate the user model
-      const populatedUser = await User.findById(foundUser._id)
+      let populatedUser = await User.findById(foundUser._id)
         .populate("paymentMethod")
         .populate("address");
 
       // Populate the activeSubscription with nested fields
       if (populatedUser.activeSubscription) {
-        populatedUser.activeSubscription = await Subscription.findById(
+        let activeSubscription = await Subscription.findById(
           populatedUser.activeSubscription
         )
           .populate("mealPlan")
           .populate("dishes")
           .populate("shippingAddress")
           .populate("paymentMethod");
+
+        // Check if the subscription is older than 7 days
+        if (moment().diff(moment(activeSubscription.createdAt), "days") > 7) {
+          // Move to previousSubscriptions and clear activeSubscription
+          populatedUser.previousSubscriptions.push(activeSubscription._id);
+          populatedUser.activeSubscription = null;
+          await populatedUser.save(); // Save the updated user document
+
+          // Populate the previousSubscriptions with nested fields
+          populatedUser.previousSubscriptions = await Promise.all(
+            populatedUser.previousSubscriptions.map((subId) =>
+              Subscription.findById(subId)
+                .populate("mealPlan")
+                .populate("dishes")
+                .populate("shippingAddress")
+                .populate("paymentMethod")
+            )
+          );
+        } else {
+          populatedUser.activeSubscription = activeSubscription;
+        }
       }
 
-      // Populate the previousSubscriptions with nested fields
+      // Populate the previousSubscriptions with nested fields if not already populated
       if (
         populatedUser.previousSubscriptions &&
         populatedUser.previousSubscriptions.length
