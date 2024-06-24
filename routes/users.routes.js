@@ -207,24 +207,30 @@ router.post(
   }
 );
 
-// POST a new dish id to the favDishes array - id is in params, dishId is a string
-router.post("/:id/add-dish", async (req, res, next) => {
+// POST new dishes to the favDishes array - id is in params, dishIds is an array of strings
+router.post("/:id/add-dishes", async (req, res, next) => {
   const { id } = req.params;
-  const { dishId } = req.body;
+  const { dishIds } = req.body; // Expecting dishIds to be an array
+
+  if (!Array.isArray(dishIds) || dishIds.length === 0) {
+    return res
+      .status(400)
+      .json({ message: "dishIds should be a non-empty array" });
+  }
 
   try {
     // Find the user by ID and update the favDishes array
     const user = await User.findByIdAndUpdate(
       id,
-      { $addToSet: { favDishes: dishId } }, // $push allows duplicates
-      { new: true } // This option returns the updated document
+      { $addToSet: { favDishes: { $each: dishIds } } }, // $addToSet with $each to add multiple elements without duplicates
+      { new: true, select: "favDishes" } // This option returns only the favDishes array
     );
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // return the favDishes array
+    // Return the updated favDishes array
     res.status(201).json(user.favDishes);
   } catch (error) {
     next(error);
@@ -232,18 +238,29 @@ router.post("/:id/add-dish", async (req, res, next) => {
 });
 
 // DELETE a dish id from favDishes array
-router.post("/:id/delete-dish", async (req, res, next) => {
+router.post("/:id/delete-dishes", async (req, res, next) => {
   const { id } = req.params;
-  const { dishId } = req.body;
+  const { dishIds } = req.body; // Expecting dishIds to be an array
+
+  if (!Array.isArray(dishIds) || dishIds.length === 0) {
+    return res
+      .status(400)
+      .json({ message: "dishIds should be a non-empty array" });
+  }
+
   try {
+    // Find the user by ID and update the favDishes array
     const user = await User.findByIdAndUpdate(
       id,
-      { $pull: { favDishes: dishId } },
-      { new: true }
+      { $pull: { favDishes: { $in: dishIds } } }, // $pull with $in to remove multiple elements
+      { new: true, select: "favDishes" } // This option returns only the favDishes array
     );
+
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
+
+    // Return the updated favDishes array
     res.json(user.favDishes);
   } catch (error) {
     next(error);
