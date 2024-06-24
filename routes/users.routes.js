@@ -47,6 +47,108 @@ router.post("/", restrictedFields(["role"]), (req, res, next) => {
     .catch((err) => next(err));
 });
 
+<<<<<<< Updated upstream
+=======
+// POST a new address and link it to the user
+router.post(
+  "/:id/address",
+  isAuthenticated,
+  roleValidation(["admin", "user"]),
+  async (req, res, next) => {
+    try {
+      // Get user, return error if not found
+      const user = await User.findById(req.params.id);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      // Create address and link it to user
+      const address = await Address.create(req.body);
+      user.address = address._id;
+      // Link user to new address
+      address.user = user._id;
+      await Promise.all([user.save(), address.save()]);
+
+      //Return address
+      return res.status(201).json(address);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+// POST a new address and link it to the user
+router.post(
+  "/:id/payment",
+  isAuthenticated,
+  roleValidation(["admin", "user"]),
+  async (req, res, next) => {
+    try {
+      // Get user, return error if not found
+      const user = await User.findById(req.params.id);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      // Create payment and link it to user
+      const payment = await Payment.create(req.body);
+      user.payment = payment._id;
+      // Link user to new payment
+      payment.user = user._id;
+      await Promise.all([user.save(), payment.save()]);
+
+      //Return payment
+      return res.status(201).json(payment);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+// POST a new dish id to the favDishes array - id is in params, dishId is a string
+router.post("/:id/add-dish", async (req, res, next) => {
+  const { id } = req.params;
+  const { dishId } = req.body;
+
+  try {
+    // Find the user by ID and update the favDishes array
+    const user = await User.findByIdAndUpdate(
+      id,
+      { $push: { favDishes: dishId } }, // $push allows duplicates
+      { new: true } // This option returns the updated document
+    );
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // return the favDishes array
+    res.status(201).json(user.favDishes);
+  } catch (error) {
+    next(error);
+  }
+});
+
+// DELETE a dish id from favDishes array
+app.post("/:id/delete-dish", async (req, res, next) => {
+  const { id } = req.params;
+  const { dishId } = req.body;
+  try {
+    const user = await User.findByIdAndUpdate(
+      id,
+      { $pull: { favDishes: dishId } },
+      { new: true }
+    );
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json(user.favDishes);
+  } catch (error) {
+    next(error);
+  }
+});
+
+>>>>>>> Stashed changes
 // PUT (replace) a user by ID
 router.put(
   "/:id",
