@@ -5,6 +5,8 @@ const bcrypt = require("bcrypt");
 const roleValidation = require("../middleware/roleValidation");
 
 const User = require("../models/User.model");
+const Dish = require("../models/Dish.model");
+
 const Subscription = require("../models/Subscription.model");
 const { Address } = require("../models/Address.model");
 const { Payment } = require("../models/PaymentMethod.model");
@@ -214,7 +216,7 @@ router.post("/:id/add-dish", async (req, res, next) => {
     // Find the user by ID and update the favDishes array
     const user = await User.findByIdAndUpdate(
       id,
-      { $push: { favDishes: dishId } }, // $push allows duplicates
+      { $addToSet: { favDishes: dishId } }, // $push allows duplicates
       { new: true } // This option returns the updated document
     );
 
@@ -230,7 +232,7 @@ router.post("/:id/add-dish", async (req, res, next) => {
 });
 
 // DELETE a dish id from favDishes array
-app.post("/:id/delete-dish", async (req, res, next) => {
+router.post("/:id/delete-dish", async (req, res, next) => {
   const { id } = req.params;
   const { dishId } = req.body;
   try {
