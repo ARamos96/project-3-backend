@@ -208,64 +208,93 @@ router.post(
 );
 
 // POST new dishes to the favDishes array - id is in params, dishIds is an array of strings
-router.post("/:id/add-dishes", async (req, res, next) => {
-  const { id } = req.params;
-  const { dishIds } = req.body; // Expecting dishIds to be an array
+router.post(
+  "/:id/add-dishes",
+  isAuthenticated,
+  roleValidation(["admin", "user"]),
+  async (req, res, next) => {
+    const { id } = req.params;
+    const { dishIds } = req.body; // Expecting dishIds to be an array
 
-  if (!Array.isArray(dishIds) || dishIds.length === 0) {
-    return res
-      .status(400)
-      .json({ message: "dishIds should be a non-empty array" });
-  }
-
-  try {
-    // Find the user by ID and update the favDishes array
-    const user = await User.findByIdAndUpdate(
-      id,
-      { $addToSet: { favDishes: { $each: dishIds } } }, // $addToSet with $each to add multiple elements without duplicates
-      { new: true, select: "favDishes" } // This option returns only the favDishes array
-    );
-
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
+    if (!Array.isArray(dishIds) || dishIds.length === 0) {
+      return res
+        .status(400)
+        .json({ message: "dishIds should be a non-empty array" });
     }
 
-    // Return the updated favDishes array
-    res.status(201).json(user.favDishes);
-  } catch (error) {
-    next(error);
+    try {
+      // Find the user by ID and update the favDishes array
+      const user = await User.findByIdAndUpdate(
+        id,
+        { $addToSet: { favDishes: { $each: dishIds } } }, // $addToSet with $each to add multiple elements without duplicates
+        { new: true, select: "favDishes" } // This option returns only the favDishes array
+      );
+
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Return the updated favDishes array
+      res.status(201).json(user.favDishes);
+    } catch (error) {
+      next(error);
+    }
   }
-});
+);
 
 // DELETE a dish id from favDishes array
-router.post("/:id/delete-dishes", async (req, res, next) => {
-  const { id } = req.params;
-  const { dishIds } = req.body; // Expecting dishIds to be an array
+router.post(
+  "/:id/delete-dishes",
+  isAuthenticated,
+  roleValidation(["admin", "user"]),
+  async (req, res, next) => {
+    const { id } = req.params;
+    const { dishIds } = req.body; // Expecting dishIds to be an array
 
-  if (!Array.isArray(dishIds) || dishIds.length === 0) {
-    return res
-      .status(400)
-      .json({ message: "dishIds should be a non-empty array" });
-  }
-
-  try {
-    // Find the user by ID and update the favDishes array
-    const user = await User.findByIdAndUpdate(
-      id,
-      { $pull: { favDishes: { $in: dishIds } } }, // $pull with $in to remove multiple elements
-      { new: true, select: "favDishes" } // This option returns only the favDishes array
-    );
-
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
+    if (!Array.isArray(dishIds) || dishIds.length === 0) {
+      return res
+        .status(400)
+        .json({ message: "dishIds should be a non-empty array" });
     }
 
-    // Return the updated favDishes array
-    res.json(user.favDishes);
-  } catch (error) {
-    next(error);
+    try {
+      // Find the user by ID and update the favDishes array
+      const user = await User.findByIdAndUpdate(
+        id,
+        { $pull: { favDishes: { $in: dishIds } } }, // $pull with $in to remove multiple elements
+        { new: true, select: "favDishes" } // This option returns only the favDishes array
+      );
+
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Return the updated favDishes array
+      res.json(user.favDishes);
+    } catch (error) {
+      next(error);
+    }
   }
-});
+);
+
+router.get(
+  "/:id/fav-dishes",
+  isAuthenticated,
+  roleValidation(["admin", "user"]),
+  async (req, res, next) => {
+    const { id } = req.params;
+    try {
+      const user = await User.findById(id);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      await user.populate("favDishes");
+      res.status(200).json(user.favDishes);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
 
 // PUT (replace) a user by ID
 router.put(
