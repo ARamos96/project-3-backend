@@ -111,78 +111,13 @@ router.post("/login", async (req, res, next) => {
     const passwordCorrect = bcrypt.compareSync(password, foundUser.password);
 
     if (passwordCorrect) {
-      // Populate the user model
-      let populatedUser = await User.findById(foundUser._id)
-        .populate("paymentMethod")
-        .populate("address");
-
-      // Populate the activeSubscription with nested fields
-      if (populatedUser.activeSubscription) {
-        let activeSubscription = await Subscription.findById(
-          populatedUser.activeSubscription
-        )
-          .populate("mealPlan")
-          .populate("dishes")
-          .populate("shippingAddress")
-          .populate("paymentMethod");
-
-        // Check if the subscription is older than 7 days
-        if (moment().diff(moment(activeSubscription.createdAt), "days") > 7) {
-          // Move to previousSubscriptions and clear activeSubscription
-          populatedUser.previousSubscriptions.push(activeSubscription._id);
-          populatedUser.activeSubscription = null;
-          await populatedUser.save(); // Save the updated user document
-
-          // Populate the previousSubscriptions with nested fields
-          populatedUser.previousSubscriptions = await Promise.all(
-            populatedUser.previousSubscriptions.map((subId) =>
-              Subscription.findById(subId)
-                .populate("mealPlan")
-                .populate("dishes")
-                .populate("shippingAddress")
-                .populate("paymentMethod")
-            )
-          );
-        } else {
-          populatedUser.activeSubscription = activeSubscription;
-        }
-      }
-
-      // Populate the previousSubscriptions with nested fields if not already populated
-      if (
-        populatedUser.previousSubscriptions &&
-        populatedUser.previousSubscriptions.length
-      ) {
-        populatedUser.previousSubscriptions = await Promise.all(
-          populatedUser.previousSubscriptions.map((subId) =>
-            Subscription.findById(subId)
-              .populate("mealPlan")
-              .populate("dishes")
-              .populate("shippingAddress")
-              .populate("paymentMethod")
-          )
-        );
-      }
-
-      // Populate favDishes
-      if (populatedUser.favDishes && populatedUser.favDishes.length) {
-        populatedUser.favDishes = await Promise.all(
-          populatedUser.favDishes.map((dishId) => Dish.findById(dishId))
-        );
-      }
 
       // Create an object that will be set as the token payload
       const payload = {
-        _id: populatedUser._id,
-        email: populatedUser.email,
-        name: populatedUser.name,
-        lastName: populatedUser.lastName,
-        role: populatedUser.role,
-        activeSubscription: populatedUser.activeSubscription,
-        previousSubscriptions: populatedUser.previousSubscriptions,
-        favDishes: populatedUser.favDishes,
-        paymentMethod: populatedUser.paymentMethod,
-        address: populatedUser.address,
+        _id: foundUser._id,
+        email: foundUser.email,
+        name: foundUser.name,
+        role: foundUser.role
       };
 
       // Create a JSON Web Token and sign it
