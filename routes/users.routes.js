@@ -207,70 +207,56 @@ router.post(
   }
 );
 
-// POST new dishes to the favDishes array - id is in params, dishIds is an array of strings
+// POST dishes array and add/delete to the user favDishes array
 router.post(
-  "/:id/add-dishes",
+  "/:id/update-dishes",
   isAuthenticated,
   roleValidation(["admin", "user"]),
   async (req, res, next) => {
     const { id } = req.params;
-    const { dishIds } = req.body; // Expecting dishIds to be an array
+    const { dishes } = req.body; // Expecting dishIds to be an array of dish objects with _id
 
-    if (!Array.isArray(dishIds) || dishIds.length === 0) {
+    if (!Array.isArray(dishes)) {
       return res
         .status(400)
-        .json({ message: "dishIds should be a non-empty array" });
+        .json({ message: "dishes should be an array" });
     }
 
     try {
-      // Find the user by ID and update the favDishes array
-      const user = await User.findByIdAndUpdate(
-        id,
-        { $addToSet: { favDishes: { $each: dishIds } } }, // $addToSet with $each to add multiple elements without duplicates
-        { new: true, select: "favDishes" } // This option returns only the favDishes array
-      );
+      const user = await User.findById(id).select("favDishes");
 
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
 
-      // Return the updated favDishes array
-      res.status(201).json(user.favDishes);
-    } catch (error) {
-      next(error);
-    }
-  }
-);
+      // Extract only the _id fields from dishes
+      const newDishIds = dishes.map(dish => dish._id);
 
-// DELETE a dish id from favDishes array
-router.post(
-  "/:id/delete-dishes",
-  isAuthenticated,
-  roleValidation(["admin", "user"]),
-  async (req, res, next) => {
-    const { id } = req.params;
-    const { dishIds } = req.body; // Expecting dishIds to be an array
+      // Extract only the _id fields from favDishes, converting BSON object to string
+      const currentFavDishesIds = user.favDishes.map(dish => dish._id.toString());
 
-    if (!Array.isArray(dishIds) || dishIds.length === 0) {
-      return res
-        .status(400)
-        .json({ message: "dishIds should be a non-empty array" });
-    }
+      // Determine the dishes to remove
+      const dishesToRemove = currentFavDishesIds.filter(dishId => !newDishIds.includes(dishId));
 
-    try {
-      // Find the user by ID and update the favDishes array
-      const user = await User.findByIdAndUpdate(
-        id,
-        { $pull: { favDishes: { $in: dishIds } } }, // $pull with $in to remove multiple elements
-        { new: true, select: "favDishes" } // This option returns only the favDishes array
-      );
-
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
+      // Remove old dishes
+      if (dishesToRemove.length > 0) {
+        await User.findByIdAndUpdate(id, {
+          $pull: { favDishes: { $in: dishesToRemove } }
+        });
       }
 
+      // Add new dishes without duplicates
+      if (newDishIds.length > 0) {
+        await User.findByIdAndUpdate(id, {
+          $addToSet: { favDishes: { $each: newDishIds } }
+        });
+      }
+
+      // Find the updated user and populate favDishes with dish objects
+      const updatedUser = await User.findById(id).populate('favDishes');
+
       // Return the updated favDishes array
-      res.json(user.favDishes);
+      res.status(200).json(updatedUser.favDishes);
     } catch (error) {
       next(error);
     }
