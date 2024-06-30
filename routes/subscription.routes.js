@@ -62,71 +62,100 @@ router.post(
       paymentMethod,
     } = req.body;
 
-    // try catch block
+    let hasToPutUserAddress = false;
+    let hasToPutUserPaymentMethod = false;
+
+    let hasToPostUserAddress = false;
+    let hasToPostUserPaymentMethod = false;
+
+    // Flag booleans in case of put or post requests to user
+    if (shippingAddress.postPaymentToUser) {
+      delete shippingAddress.postPaymentToUser;
+      hasToPostUserAddress = true;
+    }
+
+    if (shippingAddress.putPaymentToUser) {
+      delete shippingAddress.putPaymentToUser;
+      hasToPutUserAddress = true;
+    }
+
+    // Flag booleans in case of put or post requests to user
+    if (paymentMethod.postAddressToUser) {
+      delete paymentMethod.postAddressToUser;
+      hasToPostUserPaymentMethod = true;
+    }
+
+    if (paymentMethod.putAddressToUser) {
+      delete paymentMethod.putAddressToUser;
+      hasToPutUserPaymentMethod = true;
+    }
+
     try {
-      let newAddress = null;
-      let newPayment = null;
+      // Create new address and payment that will be independent of user
+      const [newAddress, newPayment] = await Promise.all([
+        Address.create(shippingAddress),
+        Payment.create(paymentMethod),
+      ]);
 
-      // If shippingAddress or paymentMethod are strings i.e. object ids
-      if (
-        (typeof shippingAddress == "string") &
-        (typeof paymentMethod == "string")
-      ) {
-        [newAddress, newPayment] = await Promise.all([
-          Address.findById(shippingAddress),
-          Payment.findById(paymentMethod),
-        ]);
-        // If only one is an object id string, find existing object and create the other one
-      } else if (typeof shippingAddress == "string") {
-        newAddress = await Address.findById(shippingAddress);
-        newPayment = await Payment.create(paymentMethod);
-      } else if (typeof paymentMethod == "string") {
-        newPayment = await Payment.findById(paymentMethod);
-        newAddress = await Payment.create(paymentMethod);
-      } else if (
-        shippingAddress !== null &&
-        typeof shippingAddress === "object" &&
-        paymentMethod !== null &&
-        typeof paymentMethod === "object"
-      ) {
-        // Create new address and payment if both are objects
-        [newAddress, newPayment] = await Promise.all([
-          Address.create(shippingAddress),
-          Payment.create(paymentMethod),
-        ]);
-      }
-
-      // Find user and add references
+      // Find user
       const foundUser = await User.findById(user);
       if (!foundUser) {
         return res.status(404).json({ error: "User not found" });
       }
 
-      newAddress.user = foundUser._id;
-      newPayment.user = foundUser._id;
-      foundUser.paymentMethod = newPayment._id;
-      foundUser.address = newAddress._id;
-
-      // Find meal plan
-      const foundMealPlan = await MealPlan.findById(mealPlan);
-      if (!foundMealPlan) {
-        return res.status(404).json({ error: "Meal plan not found" });
+      // Create new meal plan and link to user
+      const newMealPlan = await MealPlan.create({
+        ...mealPlan,
+        user: foundUser._id,
+      });
+      if (!newMealPlan) {
+        return res.status(404).json({ error: "Error creating meal plan" });
       }
 
       // Create new subscription
       let newSubscription = await Subscription.create({
         shippingAddress: newAddress._id,
-        user,
-        mealPlan,
+        user: foundUser._id,
+        mealPlan: newMealPlan._id,
         dishes,
         deliveryDay,
         paymentMethod: newPayment._id,
       });
 
-      // Add subscription references
+      // Add subscription references to user
       foundUser.activeSubscription = newSubscription._id;
+
+      // Add subscription references to new address and payment method
       newAddress.subscription = newSubscription._id;
       newPayment.subscription = newSubscription._id;
+
+      // If user has to post a new address, create a new independent address
+      if (hasToPostUserAddress) {
+        foundUser.address = await Address.create(shippingAddress);
+      }
+
+      // If user has to put an existing address, update user address
+      if (hasToPutUserAddress) {
+        foundUser.address = await Address.findByIdAndUpdate(
+          foundUser.address._id,
+          shippingAddress,
+          { new: true }
+        );
+      }
+
+      // If user has to post a new payment method, create a new independent payment
+      if (hasToPostUserPaymentMethod) {
+        foundUser.paymentMethod = await Payment.create(paymentMethod);
+      }
+
+      // If user has to put an existing payment method, update user payment method
+      if (hasToPutUserPaymentMethod) {
+        foundUser.paymentMethod = await Payment.findByIdAndUpdate(
+          foundUser.paymentMethod._id,
+          paymentMethod,
+          { new: true }
+        );
+      }
 
       // Save all changes
       await Promise.all([
@@ -135,6 +164,7 @@ router.post(
         newPayment.save(),
       ]);
 
+      // Populate and return newly created subscription
       newSubscription = Subscription.findById(newSubscription._id)
         .populate("user")
         .populate("mealPlan")
