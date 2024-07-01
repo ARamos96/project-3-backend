@@ -69,24 +69,24 @@ router.post(
     let hasToPostUserPaymentMethod = false;
 
     // Flag booleans in case of put or post requests to user
-    if (shippingAddress.postPaymentToUser) {
-      delete shippingAddress.postPaymentToUser;
+    if (shippingAddress.postToUser) {
+      delete shippingAddress.postToUser;
       hasToPostUserAddress = true;
     }
 
-    if (shippingAddress.putPaymentToUser) {
-      delete shippingAddress.putPaymentToUser;
+    if (shippingAddress.putToUser) {
+      delete shippingAddress.putToUser;
       hasToPutUserAddress = true;
     }
 
     // Flag booleans in case of put or post requests to user
-    if (paymentMethod.postAddressToUser) {
-      delete paymentMethod.postAddressToUser;
+    if (paymentMethod.postToUser) {
+      delete paymentMethod.postToUser;
       hasToPostUserPaymentMethod = true;
     }
 
-    if (paymentMethod.putAddressToUser) {
-      delete paymentMethod.putAddressToUser;
+    if (paymentMethod.putToUser) {
+      delete paymentMethod.putToUser;
       hasToPutUserPaymentMethod = true;
     }
 
