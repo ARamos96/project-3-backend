@@ -24,8 +24,7 @@ const saltRounds = 10;
 
 // POST /auth/signup  - Creates a new user in the database
 router.post("/signup", (req, res, next) => {
-  const { email, password, name, lastName, contactInformation, phone, role } =
-    req.body;
+  const { email, password, name, lastName } = req.body;
 
   // Check if email or password or name are provided as empty strings
   if (email === "" || password === "" || name === "") {
@@ -70,9 +69,7 @@ router.post("/signup", (req, res, next) => {
         password: hashedPassword,
         name,
         lastName,
-        contactInformation,
-        phone,
-        role,
+        role: "user",
       });
     })
     .then((createdUser) => {
@@ -83,8 +80,14 @@ router.post("/signup", (req, res, next) => {
       // Create a new object that doesn't expose the password
       const user = { email, name, _id, role };
 
-      // Send a json response containing the user object
-      res.status(201).json({ user: user });
+      // Create a JSON Web Token and sign it
+      const authToken = jwt.sign(user, process.env.TOKEN_SECRET, {
+        algorithm: "HS256",
+        expiresIn: "6h",
+      });
+
+      // Send a json response containing the token and the user
+      res.status(201).json({ authToken: authToken, user: user });
     })
     .catch((err) => next(err)); // In this case, we send error handling to the error handling middleware.
 });
@@ -111,13 +114,12 @@ router.post("/login", async (req, res, next) => {
     const passwordCorrect = bcrypt.compareSync(password, foundUser.password);
 
     if (passwordCorrect) {
-
       // Create an object that will be set as the token payload
       const payload = {
         _id: foundUser._id,
         email: foundUser.email,
         name: foundUser.name,
-        role: foundUser.role
+        role: foundUser.role,
       };
 
       // Create a JSON Web Token and sign it
