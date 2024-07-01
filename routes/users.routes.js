@@ -217,9 +217,7 @@ router.post(
     const { dishes } = req.body; // Expecting dishIds to be an array of dish objects with _id
 
     if (!Array.isArray(dishes)) {
-      return res
-        .status(400)
-        .json({ message: "dishes should be an array" });
+      return res.status(400).json({ message: "dishes should be an array" });
     }
 
     try {
@@ -230,30 +228,34 @@ router.post(
       }
 
       // Extract only the _id fields from dishes
-      const newDishIds = dishes.map(dish => dish._id);
+      const newDishIds = dishes.map((dish) => dish._id);
 
       // Extract only the _id fields from favDishes, converting BSON object to string
-      const currentFavDishesIds = user.favDishes.map(dish => dish._id.toString());
+      const currentFavDishesIds = user.favDishes.map((dish) =>
+        dish._id.toString()
+      );
 
       // Determine the dishes to remove
-      const dishesToRemove = currentFavDishesIds.filter(dishId => !newDishIds.includes(dishId));
+      const dishesToRemove = currentFavDishesIds.filter(
+        (dishId) => !newDishIds.includes(dishId)
+      );
 
       // Remove old dishes
       if (dishesToRemove.length > 0) {
         await User.findByIdAndUpdate(id, {
-          $pull: { favDishes: { $in: dishesToRemove } }
+          $pull: { favDishes: { $in: dishesToRemove } },
         });
       }
 
       // Add new dishes without duplicates
       if (newDishIds.length > 0) {
         await User.findByIdAndUpdate(id, {
-          $addToSet: { favDishes: { $each: newDishIds } }
+          $addToSet: { favDishes: { $each: newDishIds } },
         });
       }
 
       // Find the updated user and populate favDishes with dish objects
-      const updatedUser = await User.findById(id).populate('favDishes');
+      const updatedUser = await User.findById(id).populate("favDishes");
 
       // Return the updated favDishes array
       res.status(200).json(updatedUser.favDishes);
@@ -360,30 +362,16 @@ router.delete(
         return res.status(404).json({ error: "User not found" });
       }
 
-      // Remove references from subscription.
-      //Previous subscriptions remain in database
-      const subscription = await Subscription.findById(user.activeSubscription);
-
-      if (subscription) {
-        subscription.user = null;
-        await subscription.save();
-      }
-
-      if (user.paymentMethod) {
-        const payment = await Payment.findById(user.paymentMethod);
-        payment.user = null;
-        await payment.save();
-      }
-
-      if (user.address) {
-        const address = await Address.findById(user.address);
-        address.user = null;
-        await address.save();
-      }
+      // Remove all linked data
+      await Promise.all([
+        Subscription.findByIdAndDelete(user.activeSubscription),
+        Payment.findByIdAndDelete(user.paymentMethod),
+        Address.findByIdAndDelete(user.address),
+      ]);
 
       await User.findByIdAndDelete(req.params.id);
       res.status(200).json({ message: "User deleted" });
-    } catch {
+    } catch (err) {
       next(err);
     }
   }
