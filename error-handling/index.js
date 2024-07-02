@@ -9,7 +9,15 @@ module.exports = (app) => {
     // always logs the error
     console.error("ERROR", req.method, req.path, err);
 
-    // only render if the error ocurred before sending the response
+    // Return response to frontend
+    res.status(err.status || 500).json({
+      message: err.message || "Internal server error. Check the server console",
+      code: err.code,
+      status: err.status,
+      name: err.name,
+      inner: err.inner,
+    });
+        // only render if the error ocurred before sending the response
     if (!res.headersSent) {
       res.status(500).json({
         message: "Internal server error. Check the server console",
