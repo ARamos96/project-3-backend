@@ -87,7 +87,7 @@ router.post("/signup", (req, res, next) => {
       });
 
       // Send a json response containing the token and the user
-      res.status(201).json({ authToken: authToken, user: user });
+      res.status(201).json({ authToken: authToken});
     })
     .catch((err) => next(err)); // In this case, we send error handling to the error handling middleware.
 });
