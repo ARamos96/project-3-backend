@@ -85,9 +85,16 @@ router.get(
     const populatedUser = await populateUser(user._id.toString());
 
     // Check if the subscription is older than 7 days
-    if (moment().diff(moment(populatedUser.activeSubscription.createdAt), "days") > 7) {
+    if (
+      moment().diff(
+        moment(populatedUser.activeSubscription.createdAt),
+        "days"
+      ) > 7
+    ) {
       // Move to previousSubscriptions and clear activeSubscription
-      populatedUser.previousSubscriptions.push(populatedUser.activeSubscription._id);
+      populatedUser.previousSubscriptions.push(
+        populatedUser.activeSubscription._id
+      );
       populatedUser.activeSubscription = null;
       await foundUser.save(); // Save the updated user document
     }
@@ -345,10 +352,19 @@ router.patch(
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
-    const isValid = bcrypt.compareSync(oldPassword, user.password);
+    let isValid = false;
+    let message = "Error updating password";
+
+    if (oldPassword === undefined || newPassword === undefined) {
+      isValid = false;
+    } else {
+      isValid = bcrypt.compareSync(oldPassword, user.password);
+    }
 
     if (!isValid) {
-      return res.status(401).json({ error: "Previous password is not valid" });
+      return res
+        .status(401)
+        .json({ message: "Previous password is not valid!" });
     }
 
     const salt = bcrypt.genSaltSync(10);
