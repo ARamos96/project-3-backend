@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcrypt");
+const moment = require("moment");
 
 const roleValidation = require("../middleware/roleValidation");
 
@@ -82,6 +83,15 @@ router.get(
       return res.status(404).json({ error: "User not found" });
     }
     const populatedUser = await populateUser(user._id.toString());
+
+    // Check if the subscription is older than 7 days
+    if (moment().diff(moment(populatedUser.activeSubscription.createdAt), "days") > 7) {
+      // Move to previousSubscriptions and clear activeSubscription
+      populatedUser.previousSubscriptions.push(populatedUser.activeSubscription._id);
+      populatedUser.activeSubscription = null;
+      await foundUser.save(); // Save the updated user document
+    }
+
     res.status(200).json(populatedUser);
   }
 );

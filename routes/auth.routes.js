@@ -87,7 +87,7 @@ router.post("/signup", (req, res, next) => {
       });
 
       // Send a json response containing the token and the user
-      res.status(201).json({ authToken: authToken});
+      res.status(201).json({ authToken: authToken });
     })
     .catch((err) => next(err)); // In this case, we send error handling to the error handling middleware.
 });
@@ -122,6 +122,25 @@ router.post("/login", async (req, res, next) => {
         role: foundUser.role,
       };
 
+      // Populate the activeSubscription for comparison purposes
+      if (foundUser.activeSubscription) {
+        let activeSubscription = await Subscription.findById(
+          foundUser.activeSubscription
+        )
+          .populate("mealPlan")
+          .populate("dishes")
+          .populate("shippingAddress")
+          .populate("paymentMethod");
+
+        // Check if the subscription is older than 7 days
+        if (moment().diff(moment(activeSubscription.createdAt), "days") > 7) {
+          // Move to previousSubscriptions and clear activeSubscription
+          foundUser.previousSubscriptions.push(activeSubscription._id);
+          foundUser.activeSubscription = null;
+          await foundUser.save(); // Save the updated user document
+        }
+      }
+
       // Create a JSON Web Token and sign it
       const authToken = jwt.sign(payload, process.env.TOKEN_SECRET, {
         algorithm: "HS256",
@@ -131,9 +150,7 @@ router.post("/login", async (req, res, next) => {
       // Send the token as the response
       return res.status(200).json({ authToken: authToken });
     } else {
-      return res
-        .status(401)
-        .json({ message: "Unable to authenticate the user" });
+      return res.status(401).json({ message: "Incorrect password" });
     }
   } catch (err) {
     return next(err); // In this case, we send error handling to the error handling middleware.

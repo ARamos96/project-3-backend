@@ -35,6 +35,15 @@ const userSchema = new Schema(
     favDishes: [{ type: Schema.Types.ObjectId, ref: "Dish" }],
     paymentMethod: { type: Schema.Types.ObjectId, ref: "Payment" },
     address: { type: Schema.Types.ObjectId, ref: "Address" },
+    savedSession: {
+      cart: {
+        type: Array, 
+      },
+      mealPlan: {
+        type: Schema.Types.ObjectId,
+        ref: "MealPlan", // Assuming mealPlan is another model
+      },
+    },
   },
   {
     timestamps: true,
