@@ -123,7 +123,7 @@ router.post("/login", async (req, res, next) => {
       };
 
       // Populate the activeSubscription for comparison purposes
-      if (foundUser.activeSubscription) {
+      if (foundUser?.activeSubscription) {
         let activeSubscription = await Subscription.findById(
           foundUser.activeSubscription
         )
@@ -133,7 +133,7 @@ router.post("/login", async (req, res, next) => {
           .populate("paymentMethod");
 
         // Check if the subscription is older than 7 days
-        if (moment().diff(moment(activeSubscription.createdAt), "days") > 7) {
+        if (moment().diff(moment(activeSubscription?.createdAt), "days") > 7) {
           // Move to previousSubscriptions and clear activeSubscription
           foundUser.previousSubscriptions.push(activeSubscription._id);
           foundUser.activeSubscription = null;

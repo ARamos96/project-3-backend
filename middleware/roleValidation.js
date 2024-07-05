@@ -32,22 +32,6 @@ if (!req.headers.authorization) {
           req.payload.role,
       });
     }
-
-    // If isSameUser parameter is passed and it equals the following string
-    /*
-    if (
-      isSameUser != undefined &&
-      isSameUser.localeCompare("isSameUser") == 0
-    ) {
-      // Check if id in token payload is same as owner of object requested
-      const token = getTokenFromHeaders(req);
-      const decoded = jwt.verify(token, process.env.TOKEN_SECRET, {
-        algorithms: ["HS256"],
-      });
-      const objectRequested = req.baseUrl.slice(1);
-      console.log(JSON.stringify(decoded));
-    }
-      */
     next();
   };
 };

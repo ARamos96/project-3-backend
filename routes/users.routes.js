@@ -86,6 +86,7 @@ router.get(
 
     // Check if the subscription is older than 7 days
     if (
+      populatedUser?.activeSubscription &&
       moment().diff(
         moment(populatedUser.activeSubscription.createdAt),
         "days"
