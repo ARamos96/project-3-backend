@@ -8,10 +8,25 @@ require("./db");
 // Handles http requests (express is node js framework)
 // https://www.npmjs.com/package/express
 const express = require("express");
+const cors = require("cors");
 
 const app = express();
 
+// CORS configuration
+const corsOptions = {
+  origin: "https://savorswift.netlify.app", // Your Netlify frontend URL
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+};
+
+// Apply CORS middleware
+app.use(cors(corsOptions));
+
+// Handle preflight OPTIONS requests for all routes
+app.options("*", cors(corsOptions));
+
 const { isAuthenticated } = require("./middleware/jwt.middleware");
+
 // ℹ️ This function is getting exported from the config folder. It runs most pieces of middleware
 require("./config")(app);
 
